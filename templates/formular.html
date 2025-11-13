@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Apartmán Tyršova – Kniha hostů</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --danger: #ef4444;
+      --gray-200: #e5e7eb;
+      --gray-600: #4b5563;
+      --gray-800: #1f2937;
+      --radius: 14px;
+      --transition: all 0.3s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      padding: 16px;
+      color: var(--gray-800);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: 20px auto;
+      background: white;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    .header {
+      padding: 28px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: var(--gray-600);
+      font-size: 1rem;
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      color: #374151;
+      line-height: 1.75;
+    }
+
+    .info-box strong {
+      color: var(--gray-800);
+    }
+
+    .address {
+      text-align: center;
+      margin: 18px 0 22px;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--gray-800);
+    }
+
+    .required { color: var(--danger); }
+
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: white;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .osoba {
+      background: #f8fafc;
+      padding: 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      border: 1px solid var(--gray-200);
+    }
+
+    .osoba h3 {
+      color: var(--primary);
+      margin-bottom: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: #4338ca;
+      transform: translateY(-1px);
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      color: var(--danger);
+      padding: 14px;
+      border-radius: 10px;
+      margin: 16px 0;
+      font-size: 0.95rem;
+      border: 1px solid #fecaca;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 0.8rem;
+      color: var(--gray-600);
+    }
+
+    @media (max-width: 480px) {
+      .container { margin: 10px; }
+      .content { padding: 20px; }
+      .header { padding: 24px 16px; }
+      .header h1 { font-size: 1.5rem; }
+      input, select, .btn { font-size: 1rem; }
+      .info-box { font-size: 0.93rem; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Apartmán Tyršova</h1>
+      <p>Kniha hostů</p>
+    </div>
+
+    <div class="content">
+
+      <!-- TVŮJ TEXT – PŘESNĚ PODLE POŽADAVKU -->
+      <div class="info-box">
+        Prosíme vás o vyplnění této knihy hostů.<br><br>
+        Vyplněním formuláře nám pomáháte splnit <strong>zákonem stanovené povinnosti</strong> vedení evidence ubytovaných osob a platby místního poplatku z pobytu.<br><br>
+        Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží <strong>výhradně k evidenci pobytu</strong>.
+      </div>
+
+      <div class="address">
+        <i class="fas fa-map-marker-alt"></i> Apartmán Tyršova, Tyršova  1239/1, 669 02 Znojmo
+      </div>
+      <!-- KONEC TVÉHO TEXTU -->
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert-error">
+              <i class="fas fa-exclamation-triangle"></i> {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form action="/odeslat" method="POST">
+        <div class="form-group">
+          <label>Počet osob <span class="required">*</span></label>
+          <select name="pocet_osob" id="pocet_osob" required onchange="zobrazOsoby()">
+            <option value="">-- Vyberte --</option>
+            <option value="1" {% if data.get('pocet_osob') == '1' %}selected{% endif %}>1 osoba</option>
+            <option value="2" {% if data.get('pocet_osob') == '2' %}selected{% endif %}>2 osoby</option>
+          </select>
+        </div>
+
+        <div id="osoby">
+          <div class="osoba" id="osoba1">
+            <h3>1. Osoba</h3>
+            <div class="form-group">
+              <label>Jméno <span class="required">*</span></label>
+              <input type="text" name="jmeno1" value="{{ data.get('jmeno1', '') }}" placeholder="Jan Novák" required>
+            </div>
+            <div class="form-group">
+              <label>Doklad <span class="required">*</span></label>
+              <input type="text" name="doklad1" value="{{ data.get('doklad1', '') }}" placeholder="AB123456" required>
+            </div>
+            <div class="form-group">
+              <label>Adresa <span class="required">*</span></label>
+              <input type="text" name="adresa1" value="{{ data.get('adresa1', '') }}" placeholder="Ulice 5, Brno" required>
+            </div>
+            <div class="form-group">
+              <label>Narození <span class="required">*</span></label>
+              <input type="text" name="narozeni1" value="{{ data.get('narozeni1', '') }}" placeholder="15. 6. 1985" required pattern="^\d{1,2}\.\s?\d{1,2}\.\s?\d{4}$">
+              <small>Formát: 15. 6. 1985</small>
+            </div>
+          </div>
+
+          <div class="osoba" id="osoba2">
+            <h3>2. Osoba</h3>
+            <div class="form-group">
+              <label>Jméno <span class="required">*</span></label>
+              <input type="text" name="jmeno2" value="{{ data.get('jmeno2', '') }}" placeholder="Marie Nováková">
+            </div>
+            <div class="form-group">
+              <label>Doklad <span class="required">*</span></label>
+              <input type="text" name="doklad2" value="{{ data.get('doklad2', '') }}" placeholder="CD987654">
+            </div>
+            <div class="form-group">
+              <label>Adresa <span class="required">*</span></label>
+              <input type="text" name="adresa2" value="{{ data.get('adresa2', '') }}" placeholder="Ulice 5, Brno">
+            </div>
+            <div class="form-group">
+              <label>Narození <span class="required">*</span></label>
+              <input type="text" name="narozeni2" value="{{ data.get('narozeni2', '') }}" placeholder="22. 9. 1988" pattern="^\d{1,2}\.\s?\d{1,2}\.\s?\d{4}$">
+              <small>Formát: 22. 9. 1988</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>E-mail <span class="required">*</span></label>
+          <input type="email" name="email" value="{{ data.get('email', '') }}" placeholder="jan@priklad.cz" required>
+        </div>
+
+        <div class="form-group">
+          <label>Telefon <span class="required">*</span></label>
+          <input type="tel" name="telefon" value="{{ data.get('telefon', '') }}" placeholder="777 123 456" required>
+        </div>
+
+        <div class="form-group">
+          <label>Příjezd <span class="required">*</span></label>
+          <input type="date" name="prijezd" value="{{ data.get('prijezd', '') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Odjezd <span class="required">*</span></label>
+          <input type="date" name="odjezd" value="{{ data.get('odjezd', '') }}" required>
+        </div>
+
+        <button type="submit" class="btn">
+          <i class="fas fa-paper-plane"></i> Odeslat
+        </button>
+      </form>
+
+      <div class="footer">
+        <i class="fas fa-shield-alt"></i> Data jsou šifrovaná
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function zobrazOsoby() {
+      const pocet = document.getElementById('pocet_osob').value;
+      const o1 = document.getElementById('osoba1');
+      const o2 = document.getElementById('osoba2');
+      o1.style.display = 'none'; o2.style.display = 'none';
+      if (pocet >= '1') { o1.style.display = 'block'; }
+      if (pocet === '2') { o2.style.display = 'block'; }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('osoba1').style.display = 'none';
+      document.getElementById('osoba2').style.display = 'none';
+      if (document.getElementById('pocet_osob').value) zobrazOsoby();
+    });
+  </script>
+</body>
+</html>
