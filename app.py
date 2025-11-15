@@ -103,7 +103,7 @@ with st.form("checkin", clear_on_submit=False):
 
     st.markdown("---")
     st.markdown("""
-    **Souhlasím se zpracováním osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova.**  
+    **Souhlasím se zpracováním mých osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova, v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů, a nařízení GDPR (EU) 2016/679.Souhlas je udělen dobrovolně a lze jej kdykoli odvolat. Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu hostů.**  
     """, unsafe_allow_html=True)
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů**", value=st.session_state.form_data['souhlas'])
 
@@ -191,3 +191,4 @@ with st.form("checkin", clear_on_submit=False):
                 st.error(f"Chyba ukládání: {e}")
         else:
             st.error("Chyba připojení k Google Sheets.")
+
