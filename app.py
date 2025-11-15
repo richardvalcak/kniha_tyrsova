@@ -1,4 +1,4 @@
-# app.py – Opravený dynamický formulář pro 1 nebo 2 osoby
+# app.py – DYNAMICKÝ FORMULÁŘ: 1 nebo 2 osoby HNED po výběru
 import streamlit as st
 import pandas as pd
 import os
@@ -59,11 +59,19 @@ st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_all
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
+# === DYNAMICKÝ FORMULÁŘ ===
 with st.form("reg_form", clear_on_submit=True):
+
     st.markdown("**Vyplňte údaje o ubytování:**")
 
     # --- Počet osob (spustí rerun při změně) ---
-    pocet_osob = st.selectbox("Počet ubytovaných osob *", [1, 2], key="pocet_osob")
+    pocet_osob = st.selectbox(
+        "Počet ubytovaných osob *",
+        [1, 2],
+        index=0,
+        key="pocet_osob",
+        on_change=lambda: st.rerun()  # HNED aktualizuje formulář!
+    )
 
     # --- Pobyt ---
     col_date1, col_date2 = st.columns(2)
@@ -92,7 +100,7 @@ with st.form("reg_form", clear_on_submit=True):
         a1 = st.text_input("Adresa bydliště *", key="a1", placeholder="Hlavní 123, Brno")
         d1 = st.text_input("Číslo dokladu *", key="d1", placeholder="123456789")
 
-    # === Osoba 2 (jen pokud 2 osoby) ===
+    # === Osoba 2 (JEN POKUD 2 OSOBY) ===
     if pocet_osob == 2:
         st.markdown("---")
         st.subheader("2. Osoba")
@@ -108,10 +116,16 @@ with st.form("reg_form", clear_on_submit=True):
     submitted = st.form_submit_button("Zaregistrovat hosty", use_container_width=True)
 
     if submitted:
-        o1 = {"jmeno": j1.strip(), "n21": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
-        o2 = {"jmeno": j2.strip() if pocet_osob == 2 else "", "narozeni": n2.strip() if pocet_osob == 2 else "",
-              "adresa": a2.strip() if pocet_osob == 2 else "", "doklad": d2.strip() if pocet_osob == 2 else ""}
+        # Získání dat
+        o1 = {"jmeno": j1.strip(), "narozeni": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
+        o2 = {
+            "jmeno": j2.strip() if pocet_osob == 2 else "",
+            "narozeni": n2.strip() if pocet_osob == 2 else "",
+            "adresa": a2.strip() if pocet_osob == 2 else "",
+            "doklad": d2.strip() if pocet_osob == 2 else ""
+        }
 
+        # Validace
         errors = []
         if prichod >= odjezd:
             errors.append("Odjezd musí být po příjezdu.")
@@ -134,7 +148,7 @@ with st.form("reg_form", clear_on_submit=True):
                 prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"),
                 pocet_osob, o1, o2, telefon.strip(), email.strip()
             )
-            st.success("Hosté úspěšně zaregistrováni!")
+            st.success("Hosté úspěšně zaregistrováni! Děkujeme.")
             st.balloons()
 
 st.markdown("---")
