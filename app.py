@@ -1,4 +1,4 @@
-# app.py – Ubytování Tyršova | GOOGLE SHEETS | VERZE 3.2 | © 2025
+# app.py – Apartmán Tyršova | ČISTÝ FORMULÁŘ | VERZE 4.0 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -7,7 +7,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 st.set_page_config(page_title="Apartmán Tyršova – Check-in", layout="centered")
 
-# === GOOGLE SHEETS (S CHYBOU SE PŘESKOČÍ) ===
+# === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS (bez hlášek) ===
 sheet = None
 try:
     if "GSPREAD_CREDENTIALS" in st.secrets:
@@ -16,13 +16,10 @@ try:
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
-        st.success("Připojeno k Google Sheets!")
-    else:
-        st.warning("Google Sheets není nastaven – data se neuloží!")
-except Exception as e:
-    st.warning(f"Google Sheets není dostupný: {e}")
+except:
+    pass  # Ticho – žádná hláška
 
-# === DESIGN ===
+# === DESIGN – ČISTÝ FORMULÁŘ ===
 st.markdown("<h1 style='text-align:center;'>Apartmán Tyršova</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;'>Tyršova 1239/1, 669 02 Znojmo</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -102,14 +99,9 @@ with st.form("checkin", clear_on_submit=True):
             if sheet:
                 try:
                     sheet.append_row(row)
-                    st.success("Záznam uložen do Google Sheets!")
+                    st.success("Záznam uložen!")
                     st.balloons()
-                except Exception as e:
-                    st.error(f"Chyba ukládání: {e}")
+                except:
+                    st.error("Chyba ukládání – kontaktuj správce.")
             else:
-                st.warning("Google Sheets není dostupný – data se neuložila!")
-
-# === ODKAZ NA SHEETS ===
-if "SHEET_ID" in st.secrets:
-    sheet_url = f"https://docs.google.com/spreadsheets/d/{st.secrets['SHEET_ID']}"
-    st.markdown(f"[Otevřít Google Sheets]({sheet_url})", unsafe_allow_html=True)
+                st.error("Chyba ukládání – kontaktuj správce.")
