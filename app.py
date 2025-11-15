@@ -106,7 +106,10 @@ with st.form("reg_form", clear_on_submit=False):
             d2 = st.text_input("Číslo dokladu *", placeholder="987654321")
 
     st.markdown("---")
-    st.markdown("**Souhlas se zpracováním osobních údajů:** ... (zkráceno)")
+    st.markdown("""
+    **Souhlas se zpracováním osobních údajů:**  
+    Souhlasím se zpracováním mých osobních údajů pro účely evidence ubytování v Apartmánu Tyršova, v souladu s GDPR a zákonem č. 326/1999 Sb.
+    """)
     souhlas = st.checkbox("**Souhlasím**", key="souhlas")
 
     submitted = st.form_submit_button("ODESLAT")
