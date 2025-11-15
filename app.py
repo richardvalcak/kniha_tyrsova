@@ -1,4 +1,4 @@
-# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PŘES TAJNÉ HESLO V TEXTBOXU
+# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PŘES TAJNÉ HESLO
 import streamlit as st
 import pandas as pd
 import os
@@ -41,7 +41,7 @@ def save(prichod, odjezd, pocet, o1, o2, tel, email):
         "Adresa 1": o1["adresa"], "Doklad 1": o1["doklad"],
         "Jméno 2": o2["jmeno"] if pocet == 2 else "",
         "Narození 2": o2["narozeni"] if pocet == 2 else "",
-        2": o2["adresa"] if pocet == 2 else "",
+        "Adresa 2": o2["adresa"] if pocet == 2 else "",  # ← OPRAVENO!
         "Doklad 2": o2["doklad"] if pocet == 2 else "",
         "Telefon": tel, "Email": email
     }
