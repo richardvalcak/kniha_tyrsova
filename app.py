@@ -1,11 +1,16 @@
-# app.py – Apartmán Tyršova | ČISTÝ FORMULÁŘ | VERZE 4.0 | © 2025
+# app.py – Apartmán Tyršova | ÚVODNÍ TEXT + SOUHLAS | VERZE 4.2 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-st.set_page_config(page_title="Apartmán Tyršova – Check-in", layout="centered")
+st.set_page_config(
+    page_title="Apartmán Tyršova – Check-in",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+    menu_items=None
+)
 
 # === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS (bez hlášek) ===
 sheet = None
@@ -17,11 +22,22 @@ try:
         client = gspread.authorize(creds)
         sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
 except:
-    pass  # Ticho – žádná hláška
+    pass  # Ticho
 
-# === DESIGN – ČISTÝ FORMULÁŘ ===
-st.markdown("<h1 style='text-align:center;'>Apartmán Tyršova</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;'>Tyršova 1239/1, 669 02 Znojmo</p>", unsafe_allow_html=True)
+# === ÚVODNÍ TEXT ===
+st.markdown("""
+<div style='text-align:center; margin-bottom:30px; padding:20px; background:#f8f9fa; border-radius:12px;'>
+<h2 style='margin:0; color:#1a1a1a;'>Prosíme vás o vyplnění této knihy hostů.</h2>
+<p style='margin:10px 0 0; color:#555; font-size:16px;'>
+Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.<br>
+Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.
+</p>
+<p style='margin:15px 0 0; font-weight:bold; color:#1a1a1a;'>
+📍 Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo
+</p>
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown("---")
 
 # === POČET OSOB ===
@@ -72,8 +88,14 @@ with st.form("checkin", clear_on_submit=True):
         o2_data = {"jmeno": j2, "narozeni": n2, "stat": stat2, "ucel": ucel2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
-    st.markdown("**Souhlasím se zpracováním osobních údajů dle GDPR a zákona č. 326/1999 Sb.**")
-    souhlas = st.checkbox("**Souhlasím**", value=False)
+    
+    # === SOUHLAS ===
+    st.markdown("""
+    **Souhlasím se zpracováním mých osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova, v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů, a nařízení GDPR (EU) 2016/679.**  
+    Souhlas je udělen dobrovolně a lze jej kdykoli odvolat. Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu hostů.
+    """, unsafe_allow_html=True)
+    
+    souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", value=False)
 
     submitted = st.form_submit_button("ODESLAT ZÁZNAM")
 
