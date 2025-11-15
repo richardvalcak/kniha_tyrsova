@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | Modernizovaná verze s textem souhlasu
+# app.py – Kniha hostů | Moderní verze s instrukcemi a souhlasem
 import streamlit as st
 from datetime import datetime
 import json
@@ -13,7 +13,7 @@ st.set_page_config(
     menu_items=None
 )
 
-# --- Google Sheets připojení ---
+# --- Připojení k Google Sheets ---
 sheet = None
 try:
     if "GSPREAD_CREDENTIALS" in st.secrets:
@@ -25,10 +25,13 @@ try:
 except:
     pass
 
-# --- Poděkování ---
+# --- Poděkování po odeslání ---
 if st.session_state.get('odeslano', False):
     st.success("✅ Děkujeme! Vaše údaje byly uloženy.")
     st.stop()
+
+# --- Nadpis ---
+st.markdown("<h1 style='text-align:center; color:#1a1a1a;'>Kniha hostů</h1>", unsafe_allow_html=True)
 
 # --- Úvodní text ---
 st.markdown("""
@@ -74,22 +77,22 @@ with st.form("checkin", clear_on_submit=False):
     st.markdown("### 1. Osoba")
     col1, col2 = st.columns(2)
     with col1:
-        j1 = st.text_input("Jméno a příjmení", st.session_state.form_data['j1'], key="j1")
-        n1 = st.text_input("Datum narození", st.session_state.form_data['n1'], key="n1", placeholder="1. 1. 1985")
+        j1 = st.text_input("Jméno a příjmení", st.session_state.form_data['j1'], placeholder="Jan Novák")
+        n1 = st.text_input("Datum narození", st.session_state.form_data['n1'], placeholder="15. 6. 1985")
     with col2:
-        a1 = st.text_input("Adresa", st.session_state.form_data['a1'], key="a1")
-        d1 = st.text_input("Doklad", st.session_state.form_data['d1'], key="d1")
+        a1 = st.text_input("Adresa", st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
+        d1 = st.text_input("Doklad", st.session_state.form_data['d1'], placeholder="123456789 (OP)")
 
     # --- 2. Osoba ---
     if pocet_osob == 2:
         st.markdown("### 2. Osoba")
         col1, col2 = st.columns(2)
         with col1:
-            j2 = st.text_input("Jméno a příjmení", st.session_state.form_data['j2'], key="j2")
-            n2 = st.text_input("Datum narození", st.session_state.form_data['n2'], key="n2", placeholder="1. 1. 1985")
+            j2 = st.text_input("Jméno a příjmení", st.session_state.form_data['j2'], placeholder="Marie Nováková")
+            n2 = st.text_input("Datum narození", st.session_state.form_data['n2'], placeholder="20. 8. 1990")
         with col2:
-            a2 = st.text_input("Adresa", st.session_state.form_data['a2'], key="a2")
-            d2 = st.text_input("Doklad", st.session_state.form_data['d2'], key="d2")
+            a2 = st.text_input("Adresa", st.session_state.form_data['a2'], placeholder="Hlavní 123, Brno")
+            d2 = st.text_input("Doklad", st.session_state.form_data['d2'], placeholder="987654321 (OP)")
     else:
         j2 = n2 = a2 = d2 = ""
 
@@ -105,7 +108,7 @@ with st.form("checkin", clear_on_submit=False):
     </div>
     """, unsafe_allow_html=True)
 
-    souhlas = st.checkbox("", value=st.session_state.form_data['souhlas'])
+    souhlas = st.checkbox("Souhlasím se zpracováním osobních údajů podle výše uvedeného textu.", value=st.session_state.form_data['souhlas'])
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -142,7 +145,6 @@ with st.form("checkin", clear_on_submit=False):
         if prichod >= odjezd: errors.append("Odjezd musí být po příjezdu.")
         if not telefon.strip(): errors.append("Vyplňte telefon.")
         if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email.strip()): errors.append("Vyplňte platný email.")
-
         def valid_narozeni(n): return bool(re.match(r"^\s*\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\s*$", n))
         if not valid_narozeni(n1): errors.append("Špatný formát data narození 1. osoby.")
         if pocet_osob==2 and not valid_narozeni(n2): errors.append("Špatný formát data narození 2. osoby.")
