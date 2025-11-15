@@ -72,7 +72,7 @@ with st.form("checkin", clear_on_submit=False):
 
     col_t, col_e = st.columns(2)
     with col_t:
-        telefon = st.text_input("Telefon *", value=st.session_state.form_data['telefon'], placeholder="+420 777 123 456 nebo +49 151 1234567")
+        telefon = st.text_input("Telefon *", value=st.session_state.form_data['telefon'], placeholder="+420 777 123 456")
     with col_e:
         email = st.text_input("Email *", value=st.session_state.form_data['email'], placeholder="jan@seznam.cz")
 
@@ -184,4 +184,5 @@ with st.form("checkin", clear_on_submit=False):
                     st.error(f"Chyba ukládání: {e}")
             else:
                 st.error("Chyba připojení k Google Sheets.")
+
 
