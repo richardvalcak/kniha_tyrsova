@@ -1,16 +1,19 @@
-# app.py – Kniha hostů Apartmán Tyršova | Znojmo | CZ zákon | CSV pro úřad
+# app.py – Kniha hostů Apartmán Tyršova | STAHOVÁNÍ + MAZÁNÍ | BEZPEČNÉ
 import streamlit as st
 import pandas as pd
 import os
 from datetime import datetime
 import re
 
+# === TAJNÉ HESLO (ZMĚŇ SI HO!) ===
+MAJITEL_HESLO = "Tyrsova2025"  # ← ZMĚŇ NA SVÉ!
+
 # === Nastavení ===
 DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "hoste.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Vytvořit CSV, pokud neexistuje
+# Vytvořit CSV
 if not os.path.exists(DATA_FILE):
     columns = [
         "Příjezd", "Odjezd", "Počet osob",
@@ -20,7 +23,6 @@ if not os.path.exists(DATA_FILE):
     ]
     pd.DataFrame(columns=columns).to_csv(DATA_FILE, index=False)
 
-# Validace data (DD. MM. YYYY)
 def valid_date(text):
     if not text.strip(): return False
     if not re.match(r'^\d{1,2}\.\s*\d{1,2}\.\s*\d{4}$', text.strip()):
@@ -32,7 +34,6 @@ def valid_date(text):
     except:
         return False
 
-# Uložení dat
 def save(prichod, odjezd, pocet, o1, o2, tel, email):
     df = pd.read_csv(DATA_FILE)
     row = {
@@ -51,7 +52,6 @@ def save(prichod, odjezd, pocet, o1, o2, tel, email):
 # === UI ===
 st.set_page_config(page_title="Apartmán Tyršova – Kniha hostů", layout="centered")
 
-# ZELENÉ TLAČÍTKO ODESLAT
 st.markdown("""
 <style>
     .big { font-size: 32px !important; font-weight: bold; text-align: center; }
@@ -68,6 +68,13 @@ st.markdown("""
     .stButton > button:hover {
         background-color: #218838 !important;
     }
+    .delete-btn {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    .delete-btn:hover {
+        background-color: #c82333 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -77,12 +84,10 @@ st.markdown("---")
 
 # === FORMULÁŘ ===
 with st.form("reg_form", clear_on_submit=False):
-
     st.markdown("**Vyberte počet ubytovaných osob:**")
     pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0, key="pocet_osob")
 
     st.markdown("**Vyplňte údaje o ubytování:**")
-
     col_date1, col_date2 = st.columns(2)
     with col_date1:
         prichod = st.date_input("Datum příjezdu *", value=datetime.today(), key="prichod")
@@ -97,8 +102,6 @@ with st.form("reg_form", clear_on_submit=False):
         email = st.text_input("Email *", placeholder="jan@seznam.cz", key="mail")
 
     st.markdown("---")
-
-    # === Osoba 1 ===
     st.subheader("1. Osoba")
     col1a, col1b = st.columns(2)
     with col1a:
@@ -108,7 +111,6 @@ with st.form("reg_form", clear_on_submit=False):
         a1 = st.text_input("Adresa bydliště *", key="a1", placeholder="Hlavní 123, Brno")
         d1 = st.text_input("Číslo dokladu *", key="d1", placeholder="123456789")
 
-    # === Osoba 2 (jen pokud 2) ===
     if pocet_osob == 2:
         st.markdown("---")
         st.subheader("2. Osoba")
@@ -120,7 +122,6 @@ with st.form("reg_form", clear_on_submit=False):
             a2 = st.text_input("Adresa bydliště *", key="a2", placeholder="Hlavní 123, Brno")
             d2 = st.text_input("Číslo dokladu *", key="d2", placeholder="987654321")
 
-    # === GDPR ===
     st.markdown("---")
     st.markdown("""
     **Souhlas se zpracováním osobních údajů:**  
@@ -129,18 +130,12 @@ with st.form("reg_form", clear_on_submit=False):
     """)
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", key="souhlas")
 
-    # === ODESLAT (ZELENÉ) ===
     submitted = st.form_submit_button("ODESLAT")
 
-    # === VALIDACE ===
     if submitted:
         o1 = {"jmeno": j1.strip(), "narozeni": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
-        o2 = {
-            "jmeno": j2.strip() if pocet_osob == 2 else "",
-            "narozeni": n2.strip() if pocet_osob == 2 else "",
-            "adresa": a2.strip() if pocet_osob == 2 else "",
-            "doklad": d2.strip() if pocet_osob == 2 else ""
-        }
+        o2 = {"jmeno": j2.strip() if pocet_osob == 2 else "", "narozeni": n2.strip() if pocet_osob == 2 else "",
+              "adresa": a2.strip() if pocet_osob == 2 else "", "doklad": d2.strip() if pocet_osob == 2 else ""}
 
         errors = []
         if prichod >= odjezd:
@@ -162,37 +157,65 @@ with st.form("reg_form", clear_on_submit=False):
         if errors:
             for e in errors: st.error(e)
         else:
-            save(
-                prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"),
-                pocet_osob, o1, o2, telefon.strip(), email.strip()
-            )
-            st.success("Hosté úspěšně zaregistrováni! Děkujeme za spolupráci.")
+            save(prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"), pocet_osob, o1, o2, telefon.strip(), email.strip())
+            st.success("Hosté úspěšně zaregistrováni!")
             st.balloons()
 
-# === MAJITELSKÝ PANEL – STAHOVÁNÍ CSV PRO ÚŘAD ===
+# === BEZPEČNÝ PANEL PRO MAJITELE (HESLO + MAZÁNÍ) ===
 st.markdown("---")
-if st.checkbox("Majitel – stáhnout data pro úřad", key="majitel"):
-    try:
-        df = pd.read_csv(DATA_FILE)
-        if not df.empty:
-            st.success(f"Nalezeno {len(df)} záznamů.")
-            st.dataframe(df, use_container_width=True)
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                "Stáhnout CSV pro úřad",
-                csv,
-                f"hoste_tyrsova_{datetime.now().strftime('%Y%m%d')}.csv",
-                "text/csv",
-                key="download_csv"
-            )
-        else:
-            st.info("Zatím žádní hosté.")
-    except Exception as e:
-        st.error(f"Chyba: {e}")
+with st.expander("Majitel – správa dat (pouze pro tebe)", expanded=False):
+    heslo = st.text_input("Zadej heslo majitele:", type="password", key="heslo_input")
+    
+    if heslo == MAJITEL_HESLO:
+        st.success("Přístup povolen!")
+        try:
+            df = pd.read_csv(DATA_FILE)
+            if not df.empty:
+                st.write("**Všechny záznamy:**")
+                # Přidáme index pro mazání
+                df_display = df.copy()
+                df_display.insert(0, "ID", range(1, len(df_display) + 1))
+                st.dataframe(df_display, use_container_width=True)
+
+                # Stahování
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "Stáhnout CSV pro úřad",
+                    csv,
+                    f"hoste_tyrsova_{datetime.now().strftime('%Y%m%d')}.csv",
+                    "text/csv"
+                )
+
+                # Mazání
+                st.markdown("**Smazat záznam:**")
+                id_to_delete = st.selectbox("Vyber ID záznamu k odstranění:", df_display["ID"], key="delete_select")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("Smazat vybraný záznam", key="delete_btn"):
+                        idx = df_display[df_display["ID"] == id_to_delete].index[0]
+                        df = df.drop(idx).reset_index(drop=True)
+                        df.to_csv(DATA_FILE, index=False)
+                        st.success(f"Záznam ID {id_to_delete} smazán!")
+                        st.rerun()
+                with col2:
+                    if st.button("Smazat VŠECHNY záznamy", key="delete_all"):
+                        if st.checkbox("Opravdu smazat VŠE?", key="confirm_all"):
+                            pd.DataFrame(columns=df.columns).to_csv(DATA_FILE, index=False)
+                            st.success("Všechny záznamy smazány!")
+                            st.rerun()
+
+            else:
+                st.info("Zatím žádní hosté.")
+        except Exception as e:
+            st.error(f"Chyba: {e}")
+    elif heslo and heslo != MAJITEL_HESLO:
+        st.error("Špatné heslo!")
+    else:
+        st.info("Zadej heslo pro přístup k datům.")
 
 st.markdown("""
 <p style="text-align:center; color:#777; font-size:14px;">
     Apartmán Tyršova – evidence ubytování dle zákona č. 326/1999 Sb.<br>
-    Kontakt: +420 XXX XXX XXX | info@tyrsova.cz
+    Kontakt: +420 XXX XXX XXX
 </p>
 """, unsafe_allow_html=True)
