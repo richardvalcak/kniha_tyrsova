@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | Moderní verze s instrukcemi a souhlasem
+# app.py – Kniha hostů | Moderní verze | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -9,8 +9,7 @@ import re
 st.set_page_config(
     page_title="Kniha hostů – Apartmán Tyršova",
     layout="centered",
-    initial_sidebar_state="collapsed",
-    menu_items=None
+    initial_sidebar_state="collapsed"
 )
 
 # --- Připojení k Google Sheets ---
@@ -62,37 +61,39 @@ with st.form("checkin", clear_on_submit=False):
     # --- Datum příjezdu a odjezdu ---
     col1, col2 = st.columns(2)
     with col1:
-        prichod = st.date_input("Příjezd", st.session_state.form_data['prichod'])
+        prichod = st.date_input("Příjezd", st.session_state.form_data['prichod'], key="prichod")
     with col2:
-        odjezd = st.date_input("Odjezd", st.session_state.form_data['odjezd'])
+        odjezd = st.date_input("Odjezd", st.session_state.form_data['odjezd'], key="odjezd")
 
     # --- Kontakt ---
     col1, col2 = st.columns(2)
     with col1:
-        telefon = st.text_input("Telefon", st.session_state.form_data['telefon'], placeholder="+420 777 123 456")
+        telefon = st.text_input("Telefon", st.session_state.form_data['telefon'], placeholder="+420 777 123 456", key="telefon")
     with col2:
-        email = st.text_input("Email", st.session_state.form_data['email'], placeholder="jan@seznam.cz")
+        email = st.text_input("Email", st.session_state.form_data['email'], placeholder="jan@seznam.cz", key="email")
+
+    st.markdown("---")
 
     # --- 1. Osoba ---
     st.markdown("### 1. Osoba")
     col1, col2 = st.columns(2)
     with col1:
-        j1 = st.text_input("Jméno a příjmení", st.session_state.form_data['j1'], placeholder="Jan Novák")
-        n1 = st.text_input("Datum narození", st.session_state.form_data['n1'], placeholder="15. 6. 1985")
+        j1 = st.text_input("Jméno a příjmení", st.session_state.form_data['j1'], placeholder="Jan Novák", key="j1_input")
+        n1 = st.text_input("Datum narození", st.session_state.form_data['n1'], placeholder="15. 6. 1985", key="n1_input")
     with col2:
-        a1 = st.text_input("Adresa", st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
-        d1 = st.text_input("Doklad", st.session_state.form_data['d1'], placeholder="123456789 (OP)")
+        a1 = st.text_input("Adresa", st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno", key="a1_input")
+        d1 = st.text_input("Doklad", st.session_state.form_data['d1'], placeholder="123456789 (OP)", key="d1_input")
 
     # --- 2. Osoba ---
     if pocet_osob == 2:
         st.markdown("### 2. Osoba")
         col1, col2 = st.columns(2)
         with col1:
-            j2 = st.text_input("Jméno a příjmení", st.session_state.form_data['j2'], placeholder="Marie Nováková")
-            n2 = st.text_input("Datum narození", st.session_state.form_data['n2'], placeholder="20. 8. 1990")
+            j2 = st.text_input("Jméno a příjmení 2. osoby", st.session_state.form_data['j2'], placeholder="Marie Nováková", key="j2_input")
+            n2 = st.text_input("Datum narození 2. osoby", st.session_state.form_data['n2'], placeholder="20. 8. 1990", key="n2_input")
         with col2:
-            a2 = st.text_input("Adresa", st.session_state.form_data['a2'], placeholder="Hlavní 123, Brno")
-            d2 = st.text_input("Doklad", st.session_state.form_data['d2'], placeholder="987654321 (OP)")
+            a2 = st.text_input("Adresa 2. osoby", st.session_state.form_data['a2'], placeholder="Hlavní 123, Brno", key="a2_input")
+            d2 = st.text_input("Doklad 2. osoby", st.session_state.form_data['d2'], placeholder="987654321 (OP)", key="d2_input")
     else:
         j2 = n2 = a2 = d2 = ""
 
@@ -108,7 +109,7 @@ with st.form("checkin", clear_on_submit=False):
     </div>
     """, unsafe_allow_html=True)
 
-    souhlas = st.checkbox("Souhlasím se zpracováním osobních údajů podle výše uvedeného textu.", value=st.session_state.form_data['souhlas'])
+    souhlas = st.checkbox("Souhlasím se zpracováním osobních údajů podle výše uvedeného textu.", value=st.session_state.form_data['souhlas'], key="souhlas")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
