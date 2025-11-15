@@ -1,4 +1,4 @@
-# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.3 | © 2025
+# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.4 | © 2025
 import streamlit as st
 import pandas as pd
 import os
@@ -20,7 +20,7 @@ DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "hoste.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# ZMĚŇ SI HESLO!
+# ZMĚŇ SI HESLO! (použij hash)
 MAJITEL_HESLO_HASH = "d2f7b3e8c1a9f4e6d8b7c5a3e1f9d7b5c3a1e9f7d5b3c1a9e7f5d3b1c9a7e5f3"  # hash("Znojmo2025!")
 
 COLUMNS = [
@@ -30,12 +30,16 @@ COLUMNS = [
     "Telefon", "Email", "Zapsáno"
 ]
 
+# Inicializace CSV
 if not os.path.exists(DATA_FILE):
     pd.DataFrame(columns=COLUMNS).to_csv(DATA_FILE, index=False, encoding='utf-8')
 
-# === FUNKCE ===
+# === POMOCNÉ FUNKCE ===
+def hash_password(pwd: str) -> str:
+    return hashlib.sha256(pwd.encode()).hexdigest()
+
 def check_password(pwd: str) -> bool:
-    return hashlib.sha256(pwd.encode()).hexdigest() == MAJITEL_HESLO_HASH
+    return hash_password(pwd) == MAJITEL_HESLO_HASH
 
 def format_date(text: str) -> str:
     if not text or not text.strip(): return ""
@@ -93,10 +97,12 @@ def generate_pdf(df: pd.DataFrame) -> bytes:
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40)
     styles = getSampleStyleSheet()
     elements = []
+
     elements.append(Paragraph("<b>Apartmán Tyršova – Kniha hostů</b>", styles['Title']))
     elements.append(Paragraph("Tyršova 1239/1, 669 02 Znojmo", styles['Normal']))
     elements.append(Paragraph(f"Datum tisku: {datetime.now().strftime('%d. %m. %Y %H:%M')}", styles['Normal']))
     elements.append(Spacer(1, 12))
+
     data = [COLUMNS] + [[str(row[col]) if pd.notna(row[col]) else "" for col in COLUMNS] for _, row in df.iterrows()]
     table = Table(data, colWidths=[55]*len(COLUMNS))
     table.setStyle(TableStyle([
@@ -121,62 +127,96 @@ def generate_qr() -> bytes:
     return buffer.getvalue()
 
 # === DESIGN ===
-st.markdown("<style>.big{font-size:32px!important;font-weight:bold;text-align:center}.small{font-size:16px;text-align:center;color:#555}.stButton>button{background-color:#28a745!important;color:white!important;font-weight:bold!important;font-size:18px!important}</style>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+    .big { font-size: 32px !important; font-weight: bold; text-align: center; }
+    .small { font-size: 16px; text-align: center; color: #555; }
+    .stButton > button {
+        background-color: #28a745 !important; color: white !important;
+        font-weight: bold !important; font-size: 18px !important;
+        padding: 12px 24px !important; border-radius: 8px !important; width: 100% !important;
+    }
+    .stButton > button:hover { background-color: #218838 !important; }
+</style>
+""", unsafe_allow_html=True)
+
 st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_allow_html=True)
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
-# === FORMULÁŘ ===
+# === VEŘEJNÝ FORMULÁŘ ===
 with st.form("reg_form", clear_on_submit=True):
-    pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0, key="pocet_osob_hlavni")
-    col1, col2 = st.columns(2)
-    with col1: prichod = st.date_input("Příjezd *", value=datetime.today(), key="prichod")
-    with col2: odjezd = st.date_input("Odjezd *", value=datetime.today(), key="odjezd")
-    col_t, col_e = st.columns(2)
-    with col_t: telefon = st.text_input("Telefon *", key="tel")
-    with col_e: email = st.text_input("Email *", key="email")
+    st.markdown("**Počet osob:**")
+
+    def update_form():
+        st.rerun()
+
+    pocet_osob = st.selectbox(
+        "Počet osob *", 
+        [1, 2], 
+        index=0, 
+        key="pocet_osob_hlavni",
+        on_change=update_form,
+        help="Po výběru 2 osob se zobrazí formulář pro druhou osobu."
+    )
+
+    col_date1, col_date2 = st.columns(2)
+    with col_date1:
+        prichod = st.date_input("Příjezd *", value=datetime.today(), key="prichod")
+    with col_date2:
+        odjezd = st.date_input("Odjezd *", value=datetime.today(), key="odjezd")
+
+    col_tel, col_mail = st.columns(2)
+    with col_tel:
+        telefon = st.text_input("Telefon *", placeholder="+420 777 123 456", key="tel")
+    with col_mail:
+        email = st.text_input("Email *", placeholder="jan@seznam.cz", key="email")
 
     st.markdown("---")
     st.subheader("1. Osoba")
-    c1a, c1b = st.columns(2)
-    with c1a:
-        j1 = st.text_input("Jméno *", key="j1")
-        n1 = st.text_input("Narození *", key="n1")
+    col1a, col1b = st.columns(2)
+    with col1a:
+        j1 = st.text_input("Jméno a příjmení *", placeholder="Jan Novák", key="j1")
+        n1 = st.text_input("Narození * (15. 6. 1985)", placeholder="15. 6. 1985", key="n1")
         stat1 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat1_osoba")
-    with c1b:
-        a1 = st.text_input("Adresa *", key="a1")
-        d1 = st.text_input("Doklad *", key="d1")
+    with col1b:
+        a1 = st.text_input("Adresa *", placeholder="Hlavní 123, Brno", key="a1")
+        d1 = st.text_input("Doklad *", placeholder="123456789", key="d1")
         ucel1 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel1_osoba")
 
     o2_data = {}
     if pocet_osob == 2:
         st.markdown("---")
         st.subheader("2. Osoba")
-        c2a, c2b = st.columns(2)
-        with c2a:
+        col2a, col2b = st.columns(2)
+        with col2a:
             j2 = st.text_input("Jméno *", key="j2")
             n2 = st.text_input("Narození *", key="n2")
             stat2 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat2_osoba")
-        with c2b:
+        with col2b:
             a2 = st.text_input("Adresa *", key="a2")
             d2 = st.text_input("Doklad *", key="d2")
             ucel2 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel2_osoba")
-        o2_data = {"jmeno": j2, "narozeni": n2, "stat": stat2, "ucel": ucel2, "adresa": a2, "doklad": d2}
+        o2_data = {
+            "jmeno": j2, "narozeni": n2, "stat": stat2,
+            "ucel": ucel2, "adresa": a2, "doklad": d2
+        }
 
     st.markdown("---")
-    souhlas = st.checkbox("**Souhlasím se zpracováním údajů**", key="souhlas")
-    submitted = st.form_submit_button("ODESLAT")
+    st.markdown("**Souhlasím se zpracováním osobních údajů dle GDPR a zákona č. 326/1999 Sb.**")
+    souhlas = st.checkbox("**Souhlasím**", value=False, key="souhlas")
 
+    submitted = st.form_submit_button("ODESLAT")
     if submitted:
         errors = []
-        if prichod >= odjezd: errors.append("Odjezd po příjezdu.")
-        if not all([j1, n1, a1, d1, telefon, email]): errors.append("1. osoba – vše povinné.")
-        if not valid_date(format_date(n1)): errors.append("Špatné datum 1.")
+        if prichod >= odjezd: errors.append("Odjezd musí být po příjezdu.")
+        if not all([j1, n1, a1, d1, telefon, email]): errors.append("Vyplňte vše u 1. osoby.")
+        if not valid_date(format_date(n1)): errors.append("Špatné datum narození 1.")
         if not valid_email(email): errors.append("Neplatný email.")
         if not valid_phone(telefon): errors.append("Neplatný telefon.")
-        if pocet_osob == 2 and not all(o2_data.values()): errors.append("2. osoba – vše povinné.")
-        if pocet_osob == 2 and not valid_date(format_date(o2_data["narozeni"])): errors.append("Špatné datum 2.")
-        if not souhlas: errors.append("Souhlas povinný.")
+        if pocet_osob == 2 and not all(o2_data.values()): errors.append("Vyplňte vše u 2. osoby.")
+        if pocet_osob == 2 and not valid_date(format_date(o2_data["narozeni"])): errors.append("Špatné datum narození 2.")
+        if not souhlas: errors.append("Souhlas je povinný.")
 
         if errors:
             for e in errors: st.error(e)
@@ -194,42 +234,56 @@ with st.form("reg_form", clear_on_submit=True):
             }
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             save_data(df)
-            st.success("Zapsáno!")
+            st.success("Hosté zaregistrováni!")
             st.balloons()
 
-# === ADMIN PŘES URL ===
+# === SKRYTÝ ADMIN – POUZE PŘES URL: ?admin=TvojeHeslo ===
 query_params = st.query_params
 admin_pass = query_params.get("admin")
 
 if admin_pass and check_password(admin_pass):
     st.markdown("## Správa dat")
     st.success("Přístup povolen")
+
     df = load_data()
     if not df.empty:
         df_disp = df.copy()
         df_disp.insert(0, "ID", range(1, len(df_disp)+1))
-        st.dataframe(df_disp)
+        st.dataframe(df_disp, use_container_width=True)
+
         c1, c2, c3 = st.columns(3)
-        with c1: st.download_button("CSV", df.to_csv(index=False, encoding='utf-8').encode(), f"hoste_{datetime.now():%Y%m%d}.csv", "text/csv")
-        with c2: st.download_button("XML", generate_xml(df), "eturista.xml", "application/xml")
-        with c3: st.download_button("PDF", generate_pdf(df), "kniha.pdf", "application/pdf")
+        with c1:
+            st.download_button("CSV", df.to_csv(index=False, encoding='utf-8').encode(), f"hoste_{datetime.now():%Y%m%d}.csv", "text/csv")
+        with c2:
+            st.download_button("XML", generate_xml(df), "eturista.xml", "application/xml")
+        with c3:
+            st.download_button("PDF", generate_pdf(df), "kniha.pdf", "application/pdf")
+
+        st.markdown("### Smazat")
         id_del = st.selectbox("ID:", df_disp["ID"], key="id_del")
         if st.button("Smazat", key="smazat"):
             df = df.drop(df_disp[df_disp["ID"] == id_del].index).reset_index(drop=True)
             save_data(df)
             st.success("Smazáno!")
             st.rerun()
+
         if st.button("Smazat VŠE"):
-            if st.checkbox("Opravdu?", key="smazat_vse"):
+            if st.checkbox("Opravdu smazat vše?", key="smazat_vse"):
                 pd.DataFrame(columns=COLUMNS).to_csv(DATA_FILE, index=False)
                 st.success("Vše smazáno!")
                 st.rerun()
     else:
         st.info("Žádní hosté.")
+
     st.image(generate_qr(), caption="QR pro check-in")
     if st.button("Odhlásit"):
         st.query_params.clear()
         st.rerun()
 
 st.markdown("---")
-st.markdown("<p style='text-align:center;color:#777;font-size:14px'>Evidence dle zákona č. 326/1999 Sb.</p>", unsafe_allow_html=True)
+st.markdown("""
+<p style="text-align:center; color:#777; font-size:14px;">
+    Evidence ubytování dle zákona č. 326/1999 Sb.<br>
+    Kontakt: +420 XXX XXX XXX | apartman@tyrsova.cz
+</p>
+""", unsafe_allow_html=True)
