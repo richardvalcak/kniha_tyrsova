@@ -1,4 +1,4 @@
-# app.py – FINÁLNÍ: GDPR + pamatování dat + dynamika + bez chyb
+# app.py – FINÁLNÍ: Dynamický formulář uvnitř form, zelené "Odeslat", bez zbytečných tlačítek
 import streamlit as st
 import pandas as pd
 import os
@@ -57,7 +57,8 @@ st.markdown("""
         color: white !important;
         font-weight: bold !important;
         border-radius: 8px !important;
-        padding: 10px 20px !important;
+        padding: 12px 24px !important;
+        font-size: 18px !important;
     }
     .stButton>button:hover {
         background-color: #218838 !important;
@@ -69,17 +70,16 @@ st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_all
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
-# === VÝBĚR POČTU OSOB (mimo formulář) ===
-st.markdown("**Vyberte počet ubytovaných osob:**")
-pocet_osob = st.selectbox(
-    "Počet osob *",
-    [1, 2],
-    index=0,  # Pouze 0 nebo 1 – bez session_state!
-    key="pocet_osob"
-)
-
-# === FORMULÁŘ (pamatuje si data) ===
+# === FORMULÁŘ (vše uvnitř, včetně počtu osob) ===
 with st.form("reg_form", clear_on_submit=False):
+
+    st.markdown("**Vyberte počet ubytovaných osob:**")
+    pocet_osob = st.selectbox(
+        "Počet osob *",
+        [1, 2],
+        index=0,
+        key="pocet_osob"
+    )
 
     st.markdown("**Vyplňte údaje o ubytování:**")
 
@@ -131,8 +131,8 @@ with st.form("reg_form", clear_on_submit=False):
     """)
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", key="souhlas")
 
-    # --- TLAČÍTKO ZAREGISTROVAT (ZELENÉ) ---
-    submitted = st.form_submit_button("Zaregistrovat hosty", use_container_width=True)
+    # --- TLAČÍTKO "ODESLAT" (ZELENÉ, VÝRAZNÉ) ---
+    submitted = st.form_submit_button("ODESLAT", use_container_width=True)
 
     if submitted:
         o1 = {"jmeno": j1.strip(), "narozeni": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
@@ -169,10 +169,6 @@ with st.form("reg_form", clear_on_submit=False):
             )
             st.success("Hosté úspěšně zaregistrováni! Děkujeme za spolupráci.")
             st.balloons()
-
-# === TLAČÍTKO PRO ZMĚNU POČTU OSOB ===
-if st.button("Změnit počet osob a aktualizovat formulář"):
-    st.rerun()
 
 st.markdown("---")
 st.markdown("""
