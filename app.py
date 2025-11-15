@@ -1,22 +1,26 @@
-# app.py – Ubytování Tyršova | GOOGLE SHEETS | VERZE 3.1 | © 2025
+# app.py – Ubytování Tyršova | GOOGLE SHEETS | VERZE 3.2 | © 2025
 import streamlit as st
 from datetime import datetime
+import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import json
 
 st.set_page_config(page_title="Apartmán Tyršova – Check-in", layout="centered")
 
-# === GOOGLE SHEETS ===
+# === GOOGLE SHEETS (S CHYBOU SE PŘESKOČÍ) ===
+sheet = None
 try:
-    creds_dict = json.loads(st.secrets["GSPREAD_CREDENTIALS"])
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    client = gspread.authorize(creds)
-    sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
+    if "GSPREAD_CREDENTIALS" in st.secrets:
+        creds_dict = json.loads(st.secrets["GSPREAD_CREDENTIALS"])
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
+        st.success("Připojeno k Google Sheets!")
+    else:
+        st.warning("Google Sheets není nastaven – data se neuloží!")
 except Exception as e:
-    st.error("Nelze se připojit k Google Sheets. Zkontroluj secrets.toml a SHEET_ID.")
-    st.stop()
+    st.warning(f"Google Sheets není dostupný: {e}")
 
 # === DESIGN ===
 st.markdown("<h1 style='text-align:center;'>Apartmán Tyršova</h1>", unsafe_allow_html=True)
@@ -30,12 +34,7 @@ if 'pocet_osob' not in st.session_state:
 def update_pocet():
     st.session_state.pocet_osob = st.session_state.pocet_temp
 
-st.selectbox(
-    "Počet osob *",
-    [1, 2],
-    key="pocet_temp",
-    on_change=update_pocet
-)
+st.selectbox("Počet osob *", [1, 2], key="pocet_temp", on_change=update_pocet)
 pocet_osob = st.session_state.pocet_osob
 
 # === FORMULÁŘ ===
@@ -100,13 +99,17 @@ with st.form("checkin", clear_on_submit=True):
                 o2_data.get("ucel", ""), o2_data.get("adresa", ""), o2_data.get("doklad", ""),
                 telefon.strip(), email.strip(), datetime.now().strftime("%d. %m. %Y %H:%M")
             ]
-            try:
-                sheet.append_row(row)
-                st.success("Záznam uložen do Google Sheets!")
-                st.balloons()
-            except Exception as e:
-                st.error(f"Chyba: {e}")
+            if sheet:
+                try:
+                    sheet.append_row(row)
+                    st.success("Záznam uložen do Google Sheets!")
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Chyba ukládání: {e}")
+            else:
+                st.warning("Google Sheets není dostupný – data se neuložila!")
 
 # === ODKAZ NA SHEETS ===
-sheet_url = f"https://docs.google.com/spreadsheets/d/{st.secrets['SHEET_ID']}"
-st.markdown(f"[Otevřít Google Sheets]({sheet_url})", unsafe_allow_html=True)
+if "SHEET_ID" in st.secrets:
+    sheet_url = f"https://docs.google.com/spreadsheets/d/{st.secrets['SHEET_ID']}"
+    st.markdown(f"[Otevřít Google Sheets]({sheet_url})", unsafe_allow_html=True)
