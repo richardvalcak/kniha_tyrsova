@@ -1,4 +1,4 @@
-# app.py – Kniha hostů Apartmán Tyršova (CZ zákon, 1–2 osoby, odjezd, kontakt)
+# app.py – Opravený dynamický formulář pro 1 nebo 2 osoby
 import streamlit as st
 import pandas as pd
 import os
@@ -10,7 +10,6 @@ DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "hoste.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Vytvořit soubor
 if not os.path.exists(DATA_FILE):
     columns = [
         "Příjezd", "Odjezd", "Počet osob",
@@ -20,8 +19,8 @@ if not os.path.exists(DATA_FILE):
     ]
     pd.DataFrame(columns=columns).to_csv(DATA_FILE, index=False)
 
-# Validace data
 def valid_date(text):
+    if not text.strip(): return False
     if not re.match(r'^\d{1,2}\.\s*\d{1,2}\.\s*\d{4}$', text.strip()):
         return False
     try:
@@ -31,17 +30,16 @@ def valid_date(text):
     except:
         return False
 
-# Uložení
-def save(prichod, odjezd, pocet, osoba1, osoba2, tel, email):
+def save(prichod, odjezd, pocet, o1, o2, tel, email):
     df = pd.read_csv(DATA_FILE)
     row = {
         "Příjezd": prichod, "Odjezd": odjezd, "Počet osob": pocet,
-        "Jméno 1": osoba1["jmeno"], "Narození 1": osoba1["narozeni"],
-        "Adresa 1": osoba1["adresa"], "Doklad 1": osoba1["doklad"],
-        "Jméno 2": osoba2["jmeno"] if pocet == 2 else "",
-        "Narození 2": osoba2["narozeni"] if pocet == 2 else "",
-        "Adresa 2": osoba2["adresa"] if pocet == 2 else "",
-        "Doklad 2": osoba2["doklad"] if pocet == 2 else "",
+        "Jméno 1": o1["jmeno"], "Narození 1": o1["narozeni"],
+        "Adresa 1": o1["adresa"], "Doklad 1": o1["doklad"],
+        "Jméno 2": o2["jmeno"] if pocet == 2 else "",
+        "Narození 2": o2["narozeni"] if pocet == 2 else "",
+        "Adresa 2": o2["adresa"] if pocet == 2 else "",
+        "Doklad 2": o2["doklad"] if pocet == 2 else "",
         "Telefon": tel, "Email": email
     }
     df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
@@ -54,7 +52,6 @@ st.markdown("""
 <style>
     .big { font-size: 32px !important; font-weight: bold; text-align: center; }
     .small { font-size: 16px; text-align: center; color: #555; }
-    .box { background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -62,92 +59,88 @@ st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_all
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
-with st.container():
-    st.markdown("**Vyplňte údaje o ubytování a hostech:**")
-    st.markdown("*Datum narození: 15. 6. 1985 | Doklad: číslo OP nebo pasu*")
+with st.form("reg_form", clear_on_submit=True):
+    st.markdown("**Vyplňte údaje o ubytování:**")
 
-    with st.form("reg_form", clear_on_submit=True):
-        # --- Počet osob ---
-        pocet_osob = st.selectbox("Počet ubytovaných osob *", [1, 2], index=0)
+    # --- Počet osob (spustí rerun při změně) ---
+    pocet_osob = st.selectbox("Počet ubytovaných osob *", [1, 2], key="pocet_osob")
 
-        # --- Pobyt ---
-        col_date1, col_date2 = st.columns(2)
-        with col_date1:
-            prichod = st.date_input("Datum příjezdu *", value=datetime.today())
-        with col_date2:
-            odjezd = st.date_input("Datum odjezdu *", value=datetime.today())
+    # --- Pobyt ---
+    col_date1, col_date2 = st.columns(2)
+    with col_date1:
+        prichod = st.date_input("Datum příjezdu *", value=datetime.today(), key="prichod")
+    with col_date2:
+        odjezd = st.date_input("Datum odjezdu *", value=datetime.today(), key="odjezd")
 
-        # --- Kontakt (společný) ---
-        st.markdown("**Kontaktní údaje (pro rezervaci):**")
-        col_tel, col_mail = st.columns(2)
-        with col_tel:
-            telefon = st.text_input("Telefon *", placeholder="+420 777 123 456")
-        with col_mail:
-            email = st.text_input("Email *", placeholder="jan@seznam.cz")
+    # --- Kontakt ---
+    st.markdown("**Kontaktní údaje:**")
+    col_tel, col_mail = st.columns(2)
+    with col_tel:
+        telefon = st.text_input("Telefon *", placeholder="+420 777 123 456", key="tel")
+    with col_mail:
+        email = st.text_input("Email *", placeholder="jan@seznam.cz", key="mail")
 
+    st.markdown("---")
+
+    # === Osoba 1 (vždy) ===
+    st.subheader("1. Osoba")
+    col1a, col1b = st.columns(2)
+    with col1a:
+        j1 = st.text_input("Jméno a příjmení *", key="j1", placeholder="Jan Novák")
+        n1 = st.text_input("Datum narození *", key="n1", placeholder="15. 6. 1985")
+    with col1b:
+        a1 = st.text_input("Adresa bydliště *", key="a1", placeholder="Hlavní 123, Brno")
+        d1 = st.text_input("Číslo dokladu *", key="d1", placeholder="123456789")
+
+    # === Osoba 2 (jen pokud 2 osoby) ===
+    if pocet_osob == 2:
         st.markdown("---")
+        st.subheader("2. Osoba")
+        col2a, col2b = st.columns(2)
+        with col2a:
+            j2 = st.text_input("Jméno a příjmení *", key="j2", placeholder="Anna Nováková")
+            n2 = st.text_input("Datum narození *", key="n2", placeholder="22. 9. 1988")
+        with col2b:
+            a2 = st.text_input("Adresa bydliště *", key="a2", placeholder="Hlavní 123, Brno")
+            d2 = st.text_input("Číslo dokladu *", key="d2", placeholder="987654321")
 
-        # === Osoba 1 (vždy) ===
-        st.subheader("1. Osoba")
-        col1a, col1b = st.columns(2)
-        with col1a:
-            j1 = st.text_input("Jméno a příjmení *", key="j1", placeholder="Jan Novák")
-            n1 = st.text_input("Datum narození *", key="n1", placeholder="15. 6. 1985")
-        with col1b:
-            a1 = st.text_input("Adresa bydliště *", key="a1", placeholder="Hlavní 123, Brno")
-            d1 = st.text_input("Číslo dokladu *", key="d1", placeholder="123456789")
+    # --- Odeslat ---
+    submitted = st.form_submit_button("Zaregistrovat hosty", use_container_width=True)
 
-        # === Osoba 2 (jen pokud 2 osoby) ===
+    if submitted:
+        o1 = {"jmeno": j1.strip(), "n21": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
+        o2 = {"jmeno": j2.strip() if pocet_osob == 2 else "", "narozeni": n2.strip() if pocet_osob == 2 else "",
+              "adresa": a2.strip() if pocet_osob == 2 else "", "doklad": d2.strip() if pocet_osob == 2 else ""}
+
+        errors = []
+        if prichod >= odjezd:
+            errors.append("Odjezd musí být po příjezdu.")
+        if not telefon.strip() or not email.strip():
+            errors.append("Vyplňte telefon a email.")
+        if not all(o1.values()):
+            errors.append("Vyplňte všechny údaje 1. osoby.")
+        if not valid_date(o1["narozeni"]):
+            errors.append("Datum narození 1. osoby: formát 15. 6. 1985")
         if pocet_osob == 2:
-            st.markdown("---")
-            st.subheader("2. Osoba")
-            col2a, col2b = st.columns(2)
-            with col2a:
-                j2 = st.text_input("Jméno a příjmení *", key="j2", placeholder="Anna Nováková")
-                n2 = st.text_input("Datum narození *", key="n2", placeholder="22. 9. 1988")
-            with col2b:
-                a2 = st.text_input("Adresa bydliště *", key="a2", placeholder="Hlavní 123, Brno")
-                d2 = st.text_input("Číslo dokladu *", key="d2", placeholder="987654321")
+            if not all(o2.values()):
+                errors.append("Vyplňte všechny údaje 2. osoby.")
+            if not valid_date(o2["narozeni"]):
+                errors.append("Datum narození 2. osoby: formát 15. 6. 1985")
 
-        submitted = st.form_submit_button("Zaregistrovat hosty", use_container_width=True)
-
-        if submitted:
-            # Data osoby 1
-            o1 = {"jmeno": j1.strip(), "narozeni": n1.strip(), "adresa": a1.strip(), "doklad": d1.strip()}
-            # Data osoby 2
-            o2 = {"jmeno": j2.strip() if pocet_osob == 2 else "", "narozeni": n2.strip() if pocet_osob == 2 else "",
-                  "adresa": a2.strip() if pocet_osob == 2 else "", "doklad": d2.strip() if pocet_osob == 2 else ""}
-
-            # Validace
-            errors = []
-            if prichod >= odjezd:
-                errors.append("Datum odjezdu musí být po příjezdu.")
-            if not telefon.strip() or not email.strip():
-                errors.append("Vyplňte telefon a email.")
-            if not all(o1.values()):
-                errors.append("Vyplňte všechny údaje 1. osoby.")
-            if not valid_date(o1["narozeni"]):
-                errors.append("Datum narození 1. osoby: formát 15. 6. 1985")
-            if pocet_osob == 2:
-                if not all(o2.values()):
-                    errors.append("Vyplňte všechny údaje 2. osoby.")
-                if not valid_date(o2["narozeni"]):
-                    errors.append("Datum narození 2. osoby: formát 15. 6. 1985")
-
-            if errors:
-                for e in errors: st.error(e)
-            else:
-                save(
-                    prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"),
-                    pocet_osob, o1, o2, telefon.strip(), email.strip()
-                )
-                st.success("Hosté úspěšně zaregistrováni! Děkujeme.")
-                st.balloons()
+        if errors:
+            for e in errors: st.error(e)
+        else:
+            save(
+                prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"),
+                pocet_osob, o1, o2, telefon.strip(), email.strip()
+            )
+            st.success("Hosté úspěšně zaregistrováni!")
+            st.balloons()
 
 st.markdown("---")
 st.markdown("""
 <p style="text-align:center; color:#777; font-size:14px;">
-    Vaše údaje jsou zpracovávány pouze pro účely evidence ubytování dle zákona č. 326/1999 Sb.<br>
-    Nejsou předávány třetím stranám. Kontakt: +420 XXX XXX XXX
+    Údaje slouží pouze pro evidenci ubytování dle zákona č. 326/1999 Sb.<br>
+    Nejsou předávány třetím stranám.
 </p>
 """, unsafe_allow_html=True)
