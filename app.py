@@ -1,4 +1,4 @@
-# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.1 | © 2025
+# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.2 | © 2025
 import streamlit as st
 import pandas as pd
 import os
@@ -134,11 +134,8 @@ st.markdown("""
     .stButton > button {
         background-color: #28a745 !important; color: white !important;
         font-weight: bold !important; font-size: 18px !important;
-        padding: 12px 24px !important; border-radius: 8px !important; width: 100% !important;
     }
     .stButton > button:hover { background-color: #218838 !important; }
-    .delete-btn { background-color: #dc3545 !important; }
-    .delete-btn:hover { background-color: #c82333 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -149,31 +146,37 @@ st.markdown("---")
 # === VEŘEJNÝ FORMULÁŘ ===
 with st.form("reg_form", clear_on_submit=True):
     st.markdown("**Počet osob:**")
-    pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0)
+    pocet_osob = st.selectbox(
+        "Počet osob *", 
+        [1, 2], 
+        index=0, 
+        key="pocet_osob_hlavni",
+        help="Vyberte 1 nebo 2 osoby. Děti do 15 let se počítají jako 1 osoba."
+    )
 
     col_date1, col_date2 = st.columns(2)
     with col_date1:
-        prichod = st.date_input("Příjezd *", value=datetime.today())
+        prichod = st.date_input("Příjezd *", value=datetime.today(), key="prichod")
     with col_date2:
-        odjezd = st.date_input("Odjezd *", value=datetime.today())
+        odjezd = st.date_input("Odjezd *", value=datetime.today(), key="odjezd")
 
     col_tel, col_mail = st.columns(2)
     with col_tel:
-        telefon = st.text_input("Telefon *", placeholder="+420 777 123 456")
+        telefon = st.text_input("Telefon *", placeholder="+420 777 123 456", key="tel")
     with col_mail:
-        email = st.text_input("Email *", placeholder="jan@seznam.cz")
+        email = st.text_input("Email *", placeholder="jan@seznam.cz", key="email")
 
     st.markdown("---")
     st.subheader("1. Osoba")
     col1a, col1b = st.columns(2)
     with col1a:
-        j1 = st.text_input("Jméno a příjmení *", placeholder="Jan Novák")
-        n1 = st.text_input("Narození * (15. 6. 1985)", placeholder="15. 6. 1985")
-        stat1 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"])
+        j1 = st.text_input("Jméno a příjmení *", placeholder="Jan Novák", key="j1")
+        n1 = st.text_input("Narození * (15. 6. 1985)", placeholder="15. 6. 1985", key="n1")
+        stat1 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat1_osoba")
     with col1b:
-        a1 = st.text_input("Adresa *", placeholder="Hlavní 123, Brno")
-        d1 = st.text_input("Doklad *", placeholder="123456789")
-        ucel1 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"])
+        a1 = st.text_input("Adresa *", placeholder="Hlavní 123, Brno", key="a1")
+        d1 = st.text_input("Doklad *", placeholder="123456789", key="d1")
+        ucel1 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel1_osoba")
 
     o2_data = {}
     if pocet_osob == 2:
@@ -183,16 +186,19 @@ with st.form("reg_form", clear_on_submit=True):
         with col2a:
             j2 = st.text_input("Jméno *", key="j2")
             n2 = st.text_input("Narození *", key="n2")
-            stat2 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat2")
+            stat2 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat2_osoba")
         with col2b:
             a2 = st.text_input("Adresa *", key="a2")
             d2 = st.text_input("Doklad *", key="d2")
-            ucel2 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel2")
-        o2_data = {"jmeno": j2, "narozeni": n2, "stat": stat2, "ucel": ucel2, "adresa": a2, "doklad": d2}
+            ucel2 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel2_osoba")
+        o2_data = {
+            "jmeno": j2, "narozeni": n2, "stat": stat2,
+            "ucel": ucel2, "adresa": a2, "doklad": d2
+        }
 
     st.markdown("---")
     st.markdown("**Souhlasím se zpracováním osobních údajů dle GDPR a zákona č. 326/1999 Sb.**")
-    souhlas = st.checkbox("**Souhlasím**", value=False)
+    souhlas = st.checkbox("**Souhlasím**", value=False, key="souhlas")
 
     submitted = st.form_submit_button("ODESLAT")
     if submitted:
@@ -248,15 +254,15 @@ if admin_pass and check_password(admin_pass):
             st.download_button("PDF", generate_pdf(df), "kniha.pdf", "application/pdf")
 
         st.markdown("### Smazat")
-        id_del = st.selectbox("ID:", df_disp["ID"])
-        if st.button("Smazat"):
+        id_del = st.selectbox("ID:", df_disp["ID"], key="id_del")
+        if st.button("Smazat", key="smazat"):
             df = df.drop(df_disp[df_disp["ID"] == id_del].index).reset_index(drop=True)
             save_data(df)
             st.success("Smazáno!")
             st.rerun()
 
         if st.button("Smazat VŠE"):
-            if st.checkbox("Opravdu?"):
+            if st.checkbox("Opravdu smazat vše?", key="smazat_vse"):
                 pd.DataFrame(columns=COLUMNS).to_csv(DATA_FILE, index=False)
                 st.success("Vše smazáno!")
                 st.rerun()
