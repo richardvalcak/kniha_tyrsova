@@ -174,6 +174,7 @@ st.markdown("---")
 st.markdown("""
 <p style="text-align:center; color:#777; font-size:14px;">
     Apartmán Tyršova – evidence ubytování dle zákona č. 326/1999 Sb.<br>
-    Kontakt: +420 XXX XXX XXX | info@tyrsova.cz
+    Kontakt: +420 730 805 561 | info@tyrsova.cz
 </p>
 """, unsafe_allow_html=True)
+
