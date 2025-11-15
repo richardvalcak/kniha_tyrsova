@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | VOLNÝ TELEFON | VERZE 7.3 | © 2025
+# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.4 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -62,7 +62,7 @@ if 'form_data' not in st.session_state:
         'souhlas': False
     }
 
-# === FORMULÁŘ S VALIDACÍ (telefon VOLNÝ) ===
+# === FORMULÁŘ S VALIDACÍ (doklad VOLNÝ) ===
 with st.form("checkin", clear_on_submit=False):
     pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0 if st.session_state.form_data['pocet_osob'] == 1 else 1)
 
@@ -84,7 +84,7 @@ with st.form("checkin", clear_on_submit=False):
         n1 = st.text_input("Narození * (15. 6. 1985)", value=st.session_state.form_data['n1'], placeholder="15. 6. 1985")
     with c1b:
         a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
-        d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="123456789")
+        d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="např. 123456789 (OP), AB123456 (pas)")
 
     o2_data = {}
     if pocet_osob == 2:
@@ -96,7 +96,7 @@ with st.form("checkin", clear_on_submit=False):
             n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], key="n2", placeholder="20. 8. 1990")
         with c2b:
             a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], key="a2", placeholder="Hlavní 123, Brno")
-            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2", placeholder="987654321")
+            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2", placeholder="např. 987654321 (OP), XY987654 (pas)")
         o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
@@ -112,7 +112,7 @@ with st.form("checkin", clear_on_submit=False):
         submitted = st.form_submit_button("ODESLAT ZÁZNAM", use_container_width=True, type="primary")
     st.markdown("<style>.stButton>button {background-color:#28a745 !important; color:white; font-weight:bold;}</style>", unsafe_allow_html=True)
 
-    # === VALIDACE (telefon = jen vyplnit) ===
+    # === VALIDACE (doklad = jen vyplnit) ===
     if submitted:
         st.session_state.form_data.update({
             'pocet_osob': pocet_osob, 'prichod': prichod, 'odjezd': odjezd,
@@ -129,7 +129,7 @@ with st.form("checkin", clear_on_submit=False):
         if prichod >= odjezd:
             errors.append("Odjezd musí být po příjezdu.")
 
-        # 2. Telefon – jen vyplněný (žádný formát)
+        # 2. Telefon – jen vyplněný
         if not telefon.strip():
             errors.append("Zadejte telefonní číslo.")
 
@@ -145,16 +145,16 @@ with st.form("checkin", clear_on_submit=False):
         if pocet_osob == 2 and not valid_narozeni(n2):
             errors.append("Narození 2. osoby: **20. 8. 1990**")
 
-        # 5. Doklad – 9 číslic
-        if not re.match(r"^\d{9}$", d1.strip()):
-            errors.append("Doklad 1. osoby musí mít **9 číslic**")
-        if pocet_osob == 2 and not re.match(r"^\d{9}$", d2.strip()):
-            errors.append("Doklad 2. osoby musí mít **9 číslic**")
+        # 5. Doklad – jen vyplněný (žádný formát)
+        if not d1.strip():
+            errors.append("Zadejte číslo dokladu 1. osoby.")
+        if pocet_osob == 2 and not d2.strip():
+            errors.append("Zadejte číslo dokladu 2. osoby.")
 
         # 6. Povinná pole
-        required = [j1, n1, a1, d1, email]
+        required = [j1, n1, a1, email]
         if pocet_osob == 2:
-            required += [j2, n2, a2, d2]
+            required += [j2, n2, a2]
         if not all(field.strip() for field in required):
             errors.append("Vyplňte všechna povinná pole.")
 
