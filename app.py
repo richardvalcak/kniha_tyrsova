@@ -1,4 +1,4 @@
-# app.py – Apartmán Tyršova | ÚVODNÍ TEXT + SOUHLAS | VERZE 4.2 | © 2025
+# app.py – Kniha hostů | FINÁLNÍ VZHLED | VERZE 5.0 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -6,13 +6,13 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 st.set_page_config(
-    page_title="Apartmán Tyršova – Check-in",
+    page_title="Kniha hostů – Apartmán Tyršova",
     layout="centered",
     initial_sidebar_state="collapsed",
     menu_items=None
 )
 
-# === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS (bez hlášek) ===
+# === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS ===
 sheet = None
 try:
     if "GSPREAD_CREDENTIALS" in st.secrets:
@@ -22,21 +22,17 @@ try:
         client = gspread.authorize(creds)
         sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
 except:
-    pass  # Ticho
+    pass
 
-# === ÚVODNÍ TEXT ===
+# === NADPIS ===
+st.markdown("<h1 style='text-align:center; color:#1a1a1a; margin-bottom:20px;'>Kniha hostů</h1>", unsafe_allow_html=True)
+
+# === ÚVODNÍ TEXT (normální, ne tučný, zarovnaný do bloku) ===
 st.markdown("""
-<div style='text-align:center; margin-bottom:30px; padding:20px; background:#f8f9fa; border-radius:12px;'>
-<h2 style='margin:0; color:#1a1a1a;'>Kniha hostů</h2>
-<p style='margin:10px 0 0; color:#555; font-size:16px;'>
-Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.<br>
-Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.
-</p>
-<p style='margin:15px 0 0; font-weight:bold; color:#1a1a1a;'>
-📍 Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo
-</p>
-</div>
-""", unsafe_allow_html=True)
+Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.  
+Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.  
+📍 **Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo**
+""")
 
 st.markdown("---")
 
@@ -97,7 +93,16 @@ with st.form("checkin", clear_on_submit=True):
     
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", value=False)
 
-    submitted = st.form_submit_button("ODESLAT ZÁZNAM")
+    # === ZELENÉ TLAČÍTKO UPROSTŘED ===
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_left, col_mid, col_right = st.columns([1, 1, 1])
+    with col_mid:
+        submitted = st.form_submit_button(
+            "ODESLAT ZÁZNAM",
+            use_container_width=True,
+            type="primary"
+        )
+    st.markdown("<style>.stButton>button {background-color:#28a745 !important; color:white; font-weight:bold;}</style>", unsafe_allow_html=True)
 
     if submitted:
         errors = []
@@ -127,4 +132,3 @@ with st.form("checkin", clear_on_submit=True):
                     st.error("Chyba ukládání – kontaktuj správce.")
             else:
                 st.error("Chyba ukládání – kontaktuj správce.")
-
