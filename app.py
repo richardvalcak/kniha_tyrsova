@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | FINÁLNÍ VZHLED | VERZE 5.0 | © 2025
+# app.py – Kniha hostů | BEZ ÚČELU A STÁTU | VERZE 5.1 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -27,11 +27,11 @@ except:
 # === NADPIS ===
 st.markdown("<h1 style='text-align:center; color:#1a1a1a; margin-bottom:20px;'>Kniha hostů</h1>", unsafe_allow_html=True)
 
-# === ÚVODNÍ TEXT (normální, ne tučný, zarovnaný do bloku) ===
+# === ÚVODNÍ TEXT ===
 st.markdown("""
 Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.  
 Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.  
-📍 **Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo**
+**Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo**
 """)
 
 st.markdown("---")
@@ -62,11 +62,9 @@ with st.form("checkin", clear_on_submit=True):
     with c1a:
         j1 = st.text_input("Jméno a příjmení *", placeholder="Jan Novák")
         n1 = st.text_input("Narození * (15. 6. 1985)", placeholder="15. 6. 1985")
-        stat1 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"])
     with c1b:
         a1 = st.text_input("Adresa *", placeholder="Hlavní 123, Brno")
         d1 = st.text_input("Doklad *", placeholder="123456789")
-        ucel1 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"])
 
     o2_data = {}
     if pocet_osob == 2:
@@ -76,12 +74,10 @@ with st.form("checkin", clear_on_submit=True):
         with c2a:
             j2 = st.text_input("Jméno *", key="j2")
             n2 = st.text_input("Narození *", key="n2")
-            stat2 = st.selectbox("Stát *", ["Česko", "Slovensko", "Německo", "Rakousko", "Polsko", "Ukrajina", "Rusko", "USA", "Jiná"], key="stat2")
         with c2b:
             a2 = st.text_input("Adresa *", key="a2")
             d2 = st.text_input("Doklad *", key="d2")
-            ucel2 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel2")
-        o2_data = {"jmeno": j2, "narozeni": n2, "stat": stat2, "ucel": ucel2, "adresa": a2, "doklad": d2}
+        o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
     
@@ -118,9 +114,9 @@ with st.form("checkin", clear_on_submit=True):
         else:
             row = [
                 prichod.strftime("%d. %m. %Y"), odjezd.strftime("%d. %m. %Y"), pocet_osob,
-                j1.strip(), n1.strip(), stat1, ucel1, a1.strip(), d1.strip(),
-                o2_data.get("jmeno", ""), o2_data.get("narozeni", ""), o2_data.get("stat", ""), 
-                o2_data.get("ucel", ""), o2_data.get("adresa", ""), o2_data.get("doklad", ""),
+                j1.strip(), n1.strip(), a1.strip(), d1.strip(),
+                o2_data.get("jmeno", ""), o2_data.get("narozeni", ""), 
+                o2_data.get("adresa", ""), o2_data.get("doklad", ""),
                 telefon.strip(), email.strip(), datetime.now().strftime("%d. %m. %Y %H:%M")
             ]
             if sheet:
