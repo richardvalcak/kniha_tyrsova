@@ -1,4 +1,4 @@
-# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PANEL PŘES /admin
+# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PŘES ?mode=admin
 import streamlit as st
 import pandas as pd
 import os
@@ -71,28 +71,35 @@ st.markdown("""
         background-color: #dc3545 !important;
         color: white !important;
     }
+    .delete-btn:hover {
+        background-color: #c82333 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# === ZJIŠTĚNÍ, ZDA JE ADMIN REŽIM ===
-query_params = st.query_params
-is_admin = query_params.get("page", [None])[0] == "admin"
+# === ZJIŠTĚNÍ ADMIN REŽIMU (PŘES ?mode=admin) ===
+is_admin = st.query_params.get("mode", [None])[0] == "admin"
 
 # === ADMIN PANEL (SKRYTÝ) ===
 if is_admin:
-    st.markdown("## Majitel – správa dat")
+    st.title("Majitel – Správa dat")
+    st.markdown("**Pouze pro majitele – zadat heslo pro přístup**")
+    
     heslo = st.text_input("Zadej heslo majitele:", type="password", key="heslo_input")
     
     if heslo == MAJITEL_HESLO:
-        st.success("Přístup povolen!")
+        st.success("✅ Přístup povolen!")
         try:
             df = pd.read_csv(DATA_FILE)
             if not df.empty:
+                # Tabulka s ID pro mazání
                 df_display = df.copy()
                 df_display.insert(0, "ID", range(1, len(df_display) + 1))
+                st.subheader("Všechny záznamy")
                 st.dataframe(df_display, use_container_width=True)
 
-                # Stahování
+                # Stahování CSV
+                st.subheader("Stáhnout data")
                 csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
                     "Stáhnout CSV pro úřad",
@@ -101,37 +108,40 @@ if is_admin:
                     "text/csv"
                 )
 
-                # Mazání
-                st.markdown("### Smazat záznam")
-                id_to_delete = st.selectbox("Vyber ID k odstranění:", df_display["ID"], key="delete_select")
-                if st.button("Smazat vybraný záznam", type="secondary"):
-                    idx = df_display[df_display["ID"] == id_to_delete].index[0]
-                    df = df.drop(idx).reset_index(drop=True)
-                    df.to_csv(DATA_FILE, index=False)
-                    st.success(f"Záznam ID {id_to_delete} smazán!")
-                    st.rerun()
-
-                if st.button("Smazat VŠECHNY záznamy", type="secondary"):
-                    if st.checkbox("Opravdu smazat VŠE?", key="confirm_all"):
-                        pd.DataFrame(columns=df.columns).to_csv(DATA_FILE, index=False)
-                        st.success("Vše smazáno!")
+                # Mazání záznamů
+                st.subheader("Smazat záznam")
+                id_to_delete = st.selectbox("Vyber ID k odstranění:", df_display["ID"].tolist(), key="delete_select")
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    if st.button("Smazat vybraný záznam", key="delete_btn"):
+                        idx = df_display[df_display["ID"] == id_to_delete].index[0]
+                        df = df.drop(idx).reset_index(drop=True)
+                        df.to_csv(DATA_FILE, index=False)
+                        st.success(f"✅ Záznam ID {id_to_delete} smazán!")
                         st.rerun()
+                with col2:
+                    if st.button("Smazat VŠE", key="delete_all"):
+                        if st.checkbox("Opravdu smazat VŠE?", key="confirm_all"):
+                            pd.DataFrame(columns=df.columns).to_csv(DATA_FILE, index=False)
+                            st.success("✅ Všechny záznamy smazány!")
+                            st.rerun()
 
             else:
-                st.info("Zatím žádní hosté.")
+                st.info("ℹ️ Zatím žádní hosté.")
         except Exception as e:
-            st.error(f"Chyba: {e}")
+            st.error(f"❌ Chyba při načítání dat: {e}")
     elif heslo:
-        st.error("Špatné heslo!")
+        st.error("❌ Špatné heslo! Zkus to znovu.")
     else:
-        st.info("Zadej heslo pro přístup.")
+        st.info("🔒 Zadej heslo pro přístup k datům.")
 
     st.markdown("---")
-    st.markdown("**Zpět na formulář:**")
+    st.markdown("**Zpět na formulář pro hosty:**")
     if st.button("Přejít na hlavní stránku"):
-        st.switch_page("app.py")
+        st.query_params.clear()
+        st.rerun()
 
-# === VEŘEJNÝ FORMULÁŘ (jen pro hosty) ===
+# === VEŘEJNÝ FORMULÁŘ (JEN PRO HOSTY) ===
 else:
     st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_allow_html=True)
     st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
