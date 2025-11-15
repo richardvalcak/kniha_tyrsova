@@ -1,4 +1,4 @@
-# app.py – FINÁLNÍ: GDPR + pamatování dat + barevné tlačítko
+# app.py – FINÁLNÍ: GDPR + pamatování dat + dynamika + bez chyb
 import streamlit as st
 import pandas as pd
 import os
@@ -74,12 +74,12 @@ st.markdown("**Vyberte počet ubytovaných osob:**")
 pocet_osob = st.selectbox(
     "Počet osob *",
     [1, 2],
-    index=st.session_state.get("pocet_osob", 0),
+    index=0,  # Pouze 0 nebo 1 – bez session_state!
     key="pocet_osob"
 )
 
-# === FORMULÁŘ ===
-with st.form("reg_form", clear_on_submit=False):  # PAMATUJE SI DATA!
+# === FORMULÁŘ (pamatuje si data) ===
+with st.form("reg_form", clear_on_submit=False):
 
     st.markdown("**Vyplňte údaje o ubytování:**")
 
