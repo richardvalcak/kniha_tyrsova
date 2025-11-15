@@ -1,4 +1,4 @@
-# app.py – DYNAMICKÝ FORMULÁŘ (1 nebo 2 osoby) – BEZ CHYB
+# app.py – FINÁLNÍ: GDPR + pamatování dat + barevné tlačítko
 import streamlit as st
 import pandas as pd
 import os
@@ -52,6 +52,16 @@ st.markdown("""
 <style>
     .big { font-size: 32px !important; font-weight: bold; text-align: center; }
     .small { font-size: 16px; text-align: center; color: #555; }
+    .stButton>button {
+        background-color: #28a745 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+    }
+    .stButton>button:hover {
+        background-color: #218838 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -59,17 +69,17 @@ st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_all
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
-# === VÝBĚR POČTU OSOB (MIMO FORMULÁŘ) ===
+# === VÝBĚR POČTU OSOB (mimo formulář) ===
 st.markdown("**Vyberte počet ubytovaných osob:**")
 pocet_osob = st.selectbox(
     "Počet osob *",
     [1, 2],
-    index=0,
+    index=st.session_state.get("pocet_osob", 0),
     key="pocet_osob"
 )
 
-# === FORMULÁŘ (BEZ on_change) ===
-with st.form("reg_form", clear_on_submit=True):
+# === FORMULÁŘ ===
+with st.form("reg_form", clear_on_submit=False):  # PAMATUJE SI DATA!
 
     st.markdown("**Vyplňte údaje o ubytování:**")
 
@@ -112,7 +122,16 @@ with st.form("reg_form", clear_on_submit=True):
             a2 = st.text_input("Adresa bydliště *", key="a2", placeholder="Hlavní 123, Brno")
             d2 = st.text_input("Číslo dokladu *", key="d2", placeholder="987654321")
 
-    # --- Odeslat ---
+    # --- GDPR Souhlas ---
+    st.markdown("---")
+    st.markdown("""
+    **Souhlas se zpracováním osobních údajů:**  
+    Souhlasím se zpracováním mých osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova, v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů, a nařízení GDPR (EU) 2016/679.  
+    Souhlas je udělen dobrovolně a lze jej kdykoli odvolat. Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu hostů.
+    """)
+    souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", key="souhlas")
+
+    # --- TLAČÍTKO ZAREGISTROVAT (ZELENÉ) ---
     submitted = st.form_submit_button("Zaregistrovat hosty", use_container_width=True)
 
     if submitted:
@@ -138,6 +157,8 @@ with st.form("reg_form", clear_on_submit=True):
                 errors.append("Vyplňte všechny údaje 2. osoby.")
             if not valid_date(o2["narozeni"]):
                 errors.append("Datum narození 2. osoby: formát 15. 6. 1985")
+        if not souhlas:
+            errors.append("Musíte souhlasit se zpracováním osobních údajů.")
 
         if errors:
             for e in errors: st.error(e)
@@ -146,17 +167,17 @@ with st.form("reg_form", clear_on_submit=True):
                 prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"),
                 pocet_osob, o1, o2, telefon.strip(), email.strip()
             )
-            st.success("Hosté úspěšně zaregistrováni! Děkujeme.")
+            st.success("Hosté úspěšně zaregistrováni! Děkujeme za spolupráci.")
             st.balloons()
 
-# === TLAČÍTKO PRO ZMĚNU POČTU (mimo formulář) ===
+# === TLAČÍTKO PRO ZMĚNU POČTU OSOB ===
 if st.button("Změnit počet osob a aktualizovat formulář"):
     st.rerun()
 
 st.markdown("---")
 st.markdown("""
 <p style="text-align:center; color:#777; font-size:14px;">
-    Údaje slouží pouze pro evidenci ubytování dle zákona č. 326/1999 Sb.<br>
-    Nejsou předávány třetím stranám.
+    Apartmán Tyršova – evidence ubytování dle zákona č. 326/1999 Sb.<br>
+    Kontakt: +420 XXX XXX XXX | info@tyrsova.cz
 </p>
 """, unsafe_allow_html=True)
