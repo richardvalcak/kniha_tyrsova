@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.4 | © 2025
+# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.5 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -62,13 +62,15 @@ if 'form_data' not in st.session_state:
         'souhlas': False
     }
 
-# === FORMULÁŘ S VALIDACÍ (doklad VOLNÝ) ===
+# === FORMULÁŘ ===
 with st.form("checkin", clear_on_submit=False):
     pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0 if st.session_state.form_data['pocet_osob'] == 1 else 1)
 
     col1, col2 = st.columns(2)
-    with col1: prichod = st.date_input("Příjezd *", st.session_state.form_data['prichod'])
-    with col2: odjezd = st.date_input("Odjezd *", st.session_state.form_data['odjezd'])
+    with col1:
+        prichod = st.date_input("Příjezd *", st.session_state.form_data['prichod'])
+    with col2:
+        odjezd = st.date_input("Odjezd *", st.session_state.form_data['odjezd'])
 
     col_t, col_e = st.columns(2)
     with col_t:
@@ -81,7 +83,7 @@ with st.form("checkin", clear_on_submit=False):
     c1a, c1b = st.columns(2)
     with c1a:
         j1 = st.text_input("Jméno a příjmení *", value=st.session_state.form_data['j1'], placeholder="Jan Novák")
-        n1 = st.text_input("Narození * (15. 6. 1985)", value=st.session_state.form_data['n1'], placeholder="15. 6. 1985")
+        n1 = st.text_input("Narození *", value=st.session_state.form_data['n1'], placeholder="15. 6. 1985")
     with c1b:
         a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
         d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="např. 123456789 (OP)")
@@ -101,19 +103,19 @@ with st.form("checkin", clear_on_submit=False):
 
     st.markdown("---")
     st.markdown("""
-    **Souhlasím se zpracováním mých osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova, v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů, a nařízení GDPR (EU) 2016/679.**  
-    Souhlas je udělen dobrovolně a lze jej kdykoli odvolat. Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu hostů.
+    **Souhlasím se zpracováním osobních údajů (jméno, příjmení, adresa, datum narození a údaje o pobytu) pro účely evidence ubytování v Apartmánu Tyršova.**  
     """, unsafe_allow_html=True)
-    souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů podle výše uvedeného textu**", value=st.session_state.form_data['souhlas'])
+    souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů**", value=st.session_state.form_data['souhlas'])
 
     st.markdown("<br>", unsafe_allow_html=True)
     col_left, col_mid, col_right = st.columns([1, 1, 1])
     with col_mid:
         submitted = st.form_submit_button("ODESLAT ZÁZNAM", use_container_width=True, type="primary")
-    st.markdown("<style>.stButton>button {background-color:#28a745 !important; color:white; font-weight:bold;}</style>", unsafe_allow_html=True)
 
-    # === VALIDACE (doklad = jen vyplnit) ===
+    # === VALIDACE ===
     if submitted:
+
+        # Uložení do session
         st.session_state.form_data.update({
             'pocet_osob': pocet_osob, 'prichod': prichod, 'odjezd': odjezd,
             'telefon': telefon, 'email': email,
@@ -129,41 +131,39 @@ with st.form("checkin", clear_on_submit=False):
         if prichod >= odjezd:
             errors.append("Odjezd musí být po příjezdu.")
 
-        # 2. Telefon – jen vyplněný
+        # 2. Kontakt
         if not telefon.strip():
             errors.append("Zadejte telefonní číslo.")
 
-        # 3. Email
-        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email.strip()):
-            errors.append("Zadejte platný email (např. **jan@seznam.cz**)")
+        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email.strip()):
+            errors.append("Zadejte platný email.")
 
-        # 4. Narození
-def valid_narozeni(n):
-    n = n.strip()
-    # odstraníme případné dvojité mezery
-    n = re.sub(r"\s+", " ", n)
-    # povolíme formáty: 1.1.1990, 1. 1. 1990, 01.01.1990, 01. 01. 1990
-    try:
-        datetime.strptime(n.replace(" ", ""), "%d.%m.%Y")
-        return True
-    except ValueError:
-        return False
+        # 3. Validace data narození (nová, volnější)
+        def valid_narozeni(n):
+            return bool(re.match(r"^\s*\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\s*$", n))
 
-if not valid_narozeni(n1):
-    errors.append("Narození 1. osoby musí být ve formátu např. **15. 6. 1985**")
+        if not valid_narozeni(n1):
+            errors.append("Narození 1. osoby musí být ve formátu **1. 1. 1985**")
 
-if pocet_osob == 2 and not valid_narozeni(n2):
-    errors.append("Narození 2. osoby musí být ve formátu např. **20. 8. 1990**")
-        
+        if pocet_osob == 2 and not valid_narozeni(n2):
+            errors.append("Narození 2. osoby musí být ve formátu **1. 1. 1985**")
 
-        # 6. Povinná pole
+        # 4. Doklad
+        if not d1.strip():
+            errors.append("Zadejte číslo dokladu 1. osoby.")
+
+        if pocet_osob == 2 and not d2.strip():
+            errors.append("Zadejte číslo dokladu 2. osoby.")
+
+        # 5. Povinné
         required = [j1, n1, a1, email]
         if pocet_osob == 2:
             required += [j2, n2, a2]
+
         if not all(field.strip() for field in required):
             errors.append("Vyplňte všechna povinná pole.")
 
-        # 7. Souhlas
+        # 6. Souhlas
         if not souhlas:
             errors.append("Souhlas je povinný.")
 
@@ -172,23 +172,22 @@ if pocet_osob == 2 and not valid_narozeni(n2):
             for e in errors:
                 st.error(e)
             st.stop()
+
+        # === ULOŽIT DO SHEETS ===
+        row = [
+            prichod.strftime("%d. %m. %Y"), odjezd.strftime("%d. %m. %Y"), pocet_osob,
+            j1.strip(), n1.strip(), a1.strip(), d1.strip(),
+            o2_data.get("jmeno", ""), o2_data.get("narozeni", ""),
+            o2_data.get("adresa", ""), o2_data.get("doklad", ""),
+            telefon.strip(), email.strip(), datetime.now().strftime("%d. %m. %Y %H:%M")
+        ]
+
+        if sheet:
+            try:
+                sheet.append_row(row)
+                st.session_state.odeslano = True
+                st.rerun()
+            except Exception as e:
+                st.error(f"Chyba ukládání: {e}")
         else:
-            row = [
-                prichod.strftime("%d. %m. %Y"), odjezd.strftime("%d. %m. %Y"), pocet_osob,
-                j1.strip(), n1.strip(), a1.strip(), d1.strip(),
-                o2_data.get("jmeno", ""), o2_data.get("narozeni", ""), 
-                o2_data.get("adresa", ""), o2_data.get("doklad", ""),
-                telefon.strip(), email.strip(), datetime.now().strftime("%d. %m. %Y %H:%M")
-            ]
-            if sheet:
-                try:
-                    sheet.append_row(row)
-                    st.session_state.odeslano = True
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Chyba ukládání: {e}")
-            else:
-                st.error("Chyba připojení k Google Sheets.")
-
-
-
+            st.error("Chyba připojení k Google Sheets.")
