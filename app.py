@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | Modernizovaná verze
+# app.py – Kniha hostů | Modernizovaná verze s textem souhlasu
 import streamlit as st
 from datetime import datetime
 import json
@@ -30,8 +30,17 @@ if st.session_state.get('odeslano', False):
     st.success("✅ Děkujeme! Vaše údaje byly uloženy.")
     st.stop()
 
-# --- Nadpis ---
-st.markdown("<h2 style='text-align:center;'>Kniha hostů – Apartmán Tyršova</h2>", unsafe_allow_html=True)
+# --- Úvodní text ---
+st.markdown("""
+<div style="padding:15px; background-color:#f8f9fa; border-radius:12px;">
+<p>Prosíme vás o vyplnění této knihy hostů.</p>
+<p>Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.</p>
+<p>Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.</p>
+<p><b>Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo</b></p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # --- Paměť formuláře ---
 if 'form_data' not in st.session_state:
@@ -47,20 +56,21 @@ if 'form_data' not in st.session_state:
 pocet_osob = st.selectbox("Počet osob", [1, 2], index=0 if st.session_state.form_data['pocet_osob']==1 else 1)
 
 with st.form("checkin", clear_on_submit=False):
-    # --- Datum příjezdu a odjezdu vedle sebe ---
+    # --- Datum příjezdu a odjezdu ---
     col1, col2 = st.columns(2)
     with col1:
         prichod = st.date_input("Příjezd", st.session_state.form_data['prichod'])
     with col2:
         odjezd = st.date_input("Odjezd", st.session_state.form_data['odjezd'])
 
-    # --- Kontakt vedle sebe ---
+    # --- Kontakt ---
     col1, col2 = st.columns(2)
     with col1:
         telefon = st.text_input("Telefon", st.session_state.form_data['telefon'], placeholder="+420 777 123 456")
     with col2:
         email = st.text_input("Email", st.session_state.form_data['email'], placeholder="jan@seznam.cz")
 
+    # --- 1. Osoba ---
     st.markdown("### 1. Osoba")
     col1, col2 = st.columns(2)
     with col1:
@@ -70,7 +80,7 @@ with st.form("checkin", clear_on_submit=False):
         a1 = st.text_input("Adresa", st.session_state.form_data['a1'], key="a1")
         d1 = st.text_input("Doklad", st.session_state.form_data['d1'], key="d1")
 
-    # --- Druhá osoba pokud je počet 2 ---
+    # --- 2. Osoba ---
     if pocet_osob == 2:
         st.markdown("### 2. Osoba")
         col1, col2 = st.columns(2)
@@ -84,10 +94,40 @@ with st.form("checkin", clear_on_submit=False):
         j2 = n2 = a2 = d2 = ""
 
     st.markdown("---")
-    souhlas = st.checkbox("Souhlasím se zpracováním osobních údajů", value=st.session_state.form_data['souhlas'])
 
-    submitted = st.form_submit_button("Odeslat", use_container_width=True)
+    # --- Souhlas s osobními údaji ---
+    st.markdown("""
+    <div style="padding:10px; background-color:#f1f1f1; border-radius:8px; font-size:14px;">
+    <b>Souhlasím se zpracováním mých osobních údajů</b> (jméno, příjmení, adresa, datum narození a údaje o pobytu) 
+    pro účely evidence ubytování v Apartmánu Tyršova, v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů, 
+    a nařízení GDPR (EU) 2016/679. Souhlas je udělen dobrovolně a lze jej kdykoli odvolat. 
+    Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu hostů.
+    </div>
+    """, unsafe_allow_html=True)
 
+    souhlas = st.checkbox("", value=st.session_state.form_data['souhlas'])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- Odeslat tlačítko ---
+    submitted = st.form_submit_button(
+        "ODESLAT ZÁZNAM",
+        use_container_width=True
+    )
+    st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        background-color: #28a745;
+        color: white;
+        font-weight: bold;
+        height: 50px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # --- Validace a uložení ---
     if submitted:
         st.session_state.form_data.update({
             'pocet_osob': pocet_osob, 'prichod': prichod, 'odjezd': odjezd,
@@ -102,6 +142,7 @@ with st.form("checkin", clear_on_submit=False):
         if prichod >= odjezd: errors.append("Odjezd musí být po příjezdu.")
         if not telefon.strip(): errors.append("Vyplňte telefon.")
         if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email.strip()): errors.append("Vyplňte platný email.")
+
         def valid_narozeni(n): return bool(re.match(r"^\s*\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\s*$", n))
         if not valid_narozeni(n1): errors.append("Špatný formát data narození 1. osoby.")
         if pocet_osob==2 and not valid_narozeni(n2): errors.append("Špatný formát data narození 2. osoby.")
@@ -116,7 +157,6 @@ with st.form("checkin", clear_on_submit=False):
             for e in errors: st.error(e)
             st.stop()
 
-        # --- Uložit do Sheets ---
         o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2} if pocet_osob==2 else {}
         row = [
             prichod.strftime("%d.%m.%Y"), odjezd.strftime("%d.%m.%Y"), pocet_osob,
@@ -125,6 +165,7 @@ with st.form("checkin", clear_on_submit=False):
             o2_data.get("adresa", ""), o2_data.get("doklad", ""),
             telefon.strip(), email.strip(), datetime.now().strftime("%d.%m.%Y %H:%M")
         ]
+
         if sheet:
             try:
                 sheet.append_row(row)
