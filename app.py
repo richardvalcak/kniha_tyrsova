@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | BEZ ÚČELU A STÁTU | VERZE 5.1 | © 2025
+# app.py – Kniha hostů | PLACEHOLDERY PRO 2. OSOBU | VERZE 5.2 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -72,11 +72,11 @@ with st.form("checkin", clear_on_submit=True):
         st.subheader("2. Osoba")
         c2a, c2b = st.columns(2)
         with c2a:
-            j2 = st.text_input("Jméno *", key="j2")
-            n2 = st.text_input("Narození *", key="n2")
+            j2 = st.text_input("Jméno *", key="j2", placeholder="Marie Nováková")
+            n2 = st.text_input("Narození *", key="n2", placeholder="20. 8. 1990")
         with c2b:
-            a2 = st.text_input("Adresa *", key="a2")
-            d2 = st.text_input("Doklad *", key="d2")
+            a2 = st.text_input("Adresa *", key="a2", placeholder="Hlavní 123, Brno")
+            d2 = st.text_input("Doklad *", key="d2", placeholder="987654321")
         o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
