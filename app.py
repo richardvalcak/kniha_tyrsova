@@ -1,12 +1,13 @@
-# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PŘES ?mode=admin
+# app.py – Kniha hostů Apartmán Tyršova | SKRYTÝ ADMIN PŘES ?secret=tajny_kod
 import streamlit as st
 import pandas as pd
 import os
 from datetime import datetime
 import re
 
-# === TAJNÉ HESLO (ZMĚŇ SI HO!) ===
-MAJITEL_HESLO = "Tyrsova2025"  # ← ZMĚŇ NA SVÉ!
+# === TAJNÝ KÓD PRO URL (ZMĚŇ SI HO!) + HESLO ===
+TAJNY_KOD = "tyrsova2025"  # ← ZMĚŇ NA SVŮJ! (pro URL ?secret=TEN_TO)
+MAJITEL_HESLO = "MujHeslo123!"  # ← ZMĚŇ NA SVŮJ!
 
 # === Nastavení ===
 DATA_DIR = "data"
@@ -77,12 +78,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# === ZJIŠTĚNÍ ADMIN REŽIMU (PŘES ?mode=admin) ===
-is_admin = st.query_params.get("mode", [None])[0] == "admin"
+# === ZJIŠTĚNÍ ADMIN REŽIMU (PŘES ?secret=tajny_kod) ===
+is_admin = st.query_params.get("secret", [None])[0] == TAJNY_KOD
 
-# === ADMIN PANEL (SKRYTÝ) ===
+# === ADMIN PANEL (SKRYTÝ – JEN PŘES TAJNÚ URL) ===
 if is_admin:
-    st.title("Majitel – Správa dat")
+    st.title("🔒 Majitel – Správa dat")
     st.markdown("**Pouze pro majitele – zadat heslo pro přístup**")
     
     heslo = st.text_input("Zadej heslo majitele:", type="password", key="heslo_input")
