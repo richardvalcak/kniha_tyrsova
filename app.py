@@ -1,4 +1,4 @@
-# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.4 | © 2025
+# app.py – Ubytovací kniha Apartmán Tyršova | VERZE 2.5 | © 2025
 import streamlit as st
 import pandas as pd
 import os
@@ -20,7 +20,7 @@ DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "hoste.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# ZMĚŇ SI HESLO! (použij hash)
+# ZMĚŇ SI HESLO!
 MAJITEL_HESLO_HASH = "d2f7b3e8c1a9f4e6d8b7c5a3e1f9d7b5c3a1e9f7d5b3c1a9e7f5d3b1c9a7e5f3"  # hash("Znojmo2025!")
 
 COLUMNS = [
@@ -30,16 +30,12 @@ COLUMNS = [
     "Telefon", "Email", "Zapsáno"
 ]
 
-# Inicializace CSV
 if not os.path.exists(DATA_FILE):
     pd.DataFrame(columns=COLUMNS).to_csv(DATA_FILE, index=False, encoding='utf-8')
 
-# === POMOCNÉ FUNKCE ===
-def hash_password(pwd: str) -> str:
-    return hashlib.sha256(pwd.encode()).hexdigest()
-
+# === FUNKCE ===
 def check_password(pwd: str) -> bool:
-    return hash_password(pwd) == MAJITEL_HESLO_HASH
+    return hashlib.sha256(pwd.encode()).hexdigest() == MAJITEL_HESLO_HASH
 
 def format_date(text: str) -> str:
     if not text or not text.strip(): return ""
@@ -97,12 +93,10 @@ def generate_pdf(df: pd.DataFrame) -> bytes:
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40)
     styles = getSampleStyleSheet()
     elements = []
-
     elements.append(Paragraph("<b>Apartmán Tyršova – Kniha hostů</b>", styles['Title']))
     elements.append(Paragraph("Tyršova 1239/1, 669 02 Znojmo", styles['Normal']))
     elements.append(Paragraph(f"Datum tisku: {datetime.now().strftime('%d. %m. %Y %H:%M')}", styles['Normal']))
     elements.append(Spacer(1, 12))
-
     data = [COLUMNS] + [[str(row[col]) if pd.notna(row[col]) else "" for col in COLUMNS] for _, row in df.iterrows()]
     table = Table(data, colWidths=[55]*len(COLUMNS))
     table.setStyle(TableStyle([
@@ -144,22 +138,26 @@ st.markdown('<p class="big">Apartmán Tyršova – Kniha hostů</p>', unsafe_all
 st.markdown('<p class="small">Tyršova 1239/1, 669 02 Znojmo</p>', unsafe_allow_html=True)
 st.markdown("---")
 
+# === POČET OSOB MIMO FORMULÁŘ (aby se stránka obnovila) ===
+if 'pocet_osob' not in st.session_state:
+    st.session_state.pocet_osob = 1
+
+def update_pocet():
+    st.session_state.pocet_osob = st.session_state.pocet_temp
+
+st.selectbox(
+    "Počet osob *",
+    [1, 2],
+    index=0 if st.session_state.pocet_osob == 1 else 1,
+    key="pocet_temp",
+    on_change=update_pocet,
+    help="Po výběru 2 osob se objeví formulář pro druhou osobu."
+)
+
+pocet_osob = st.session_state.pocet_osob
+
 # === VEŘEJNÝ FORMULÁŘ ===
 with st.form("reg_form", clear_on_submit=True):
-    st.markdown("**Počet osob:**")
-
-    def update_form():
-        st.rerun()
-
-    pocet_osob = st.selectbox(
-        "Počet osob *", 
-        [1, 2], 
-        index=0, 
-        key="pocet_osob_hlavni",
-        on_change=update_form,
-        help="Po výběru 2 osob se zobrazí formulář pro druhou osobu."
-    )
-
     col_date1, col_date2 = st.columns(2)
     with col_date1:
         prichod = st.date_input("Příjezd *", value=datetime.today(), key="prichod")
@@ -197,10 +195,7 @@ with st.form("reg_form", clear_on_submit=True):
             a2 = st.text_input("Adresa *", key="a2")
             d2 = st.text_input("Doklad *", key="d2")
             ucel2 = st.selectbox("Účel *", ["turismus", "zaměstnání", "studium", "rodinné důvody", "jiný"], key="ucel2_osoba")
-        o2_data = {
-            "jmeno": j2, "narozeni": n2, "stat": stat2,
-            "ucel": ucel2, "adresa": a2, "doklad": d2
-        }
+        o2_data = {"jmeno": j2, "narozeni": n2, "stat": stat2, "ucel": ucel2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
     st.markdown("**Souhlasím se zpracováním osobních údajů dle GDPR a zákona č. 326/1999 Sb.**")
@@ -237,44 +232,35 @@ with st.form("reg_form", clear_on_submit=True):
             st.success("Hosté zaregistrováni!")
             st.balloons()
 
-# === SKRYTÝ ADMIN – POUZE PŘES URL: ?admin=TvojeHeslo ===
+# === SKRYTÝ ADMIN ===
 query_params = st.query_params
 admin_pass = query_params.get("admin")
 
 if admin_pass and check_password(admin_pass):
     st.markdown("## Správa dat")
     st.success("Přístup povolen")
-
     df = load_data()
     if not df.empty:
         df_disp = df.copy()
         df_disp.insert(0, "ID", range(1, len(df_disp)+1))
         st.dataframe(df_disp, use_container_width=True)
-
         c1, c2, c3 = st.columns(3)
-        with c1:
-            st.download_button("CSV", df.to_csv(index=False, encoding='utf-8').encode(), f"hoste_{datetime.now():%Y%m%d}.csv", "text/csv")
-        with c2:
-            st.download_button("XML", generate_xml(df), "eturista.xml", "application/xml")
-        with c3:
-            st.download_button("PDF", generate_pdf(df), "kniha.pdf", "application/pdf")
-
-        st.markdown("### Smazat")
+        with c1: st.download_button("CSV", df.to_csv(index=False, encoding='utf-8').encode(), f"hoste_{datetime.now():%Y%m%d}.csv", "text/csv")
+        with c2: st.download_button("XML", generate_xml(df), "eturista.xml", "application/xml")
+        with c3: st.download_button("PDF", generate_pdf(df), "kniha.pdf", "application/pdf")
         id_del = st.selectbox("ID:", df_disp["ID"], key="id_del")
         if st.button("Smazat", key="smazat"):
             df = df.drop(df_disp[df_disp["ID"] == id_del].index).reset_index(drop=True)
             save_data(df)
             st.success("Smazáno!")
             st.rerun()
-
         if st.button("Smazat VŠE"):
-            if st.checkbox("Opravdu smazat vše?", key="smazat_vse"):
+            if st.checkbox("Opravdu?", key="smazat_vse"):
                 pd.DataFrame(columns=COLUMNS).to_csv(DATA_FILE, index=False)
                 st.success("Vše smazáno!")
                 st.rerun()
     else:
         st.info("Žádní hosté.")
-
     st.image(generate_qr(), caption="QR pro check-in")
     if st.button("Odhlásit"):
         st.query_params.clear()
@@ -284,6 +270,6 @@ st.markdown("---")
 st.markdown("""
 <p style="text-align:center; color:#777; font-size:14px;">
     Evidence ubytování dle zákona č. 326/1999 Sb.<br>
-    Kontakt: +420 XXX XXX XXX | apartman@tyrsova.cz
+    Kontakt: +420 XXX XXX XXX
 </p>
 """, unsafe_allow_html=True)
