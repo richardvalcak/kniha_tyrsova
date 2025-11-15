@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | PLACEHOLDERY PRO 2. OSOBU | VERZE 5.2 | © 2025
+# app.py – Kniha hostů | PODĚKOVÁNÍ PO ODESLÁNÍ | VERZE 6.0 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -23,6 +23,21 @@ try:
         sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
 except:
     pass
+
+# === PODĚKOVÁNÍ PO ODESLÁNÍ ===
+if 'odeslano' in st.session_state and st.session_state.odeslano:
+    st.markdown("<h2 style='text-align:center; color:#28a745;'>Děkujeme za vyplnění!</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center; margin:30px 0; padding:20px; background:#f8f9fa; border-radius:12px;'>
+    <p style='font-size:18px; color:#333; margin:10px 0;'>
+    Vaše údaje byly úspěšně uloženy.
+    </p>
+    <p style='font-size:16px; color:#555;'>
+    Přejeme vám příjemný pobyt v Apartmánu Tyršova! 🌿
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
 
 # === NADPIS ===
 st.markdown("<h1 style='text-align:center; color:#1a1a1a; margin-bottom:20px;'>Kniha hostů</h1>", unsafe_allow_html=True)
@@ -122,8 +137,8 @@ with st.form("checkin", clear_on_submit=True):
             if sheet:
                 try:
                     sheet.append_row(row)
-                    st.success("Záznam uložen!")
-                    st.balloons()
+                    st.session_state.odeslano = True
+                    st.rerun()
                 except:
                     st.error("Chyba ukládání – kontaktuj správce.")
             else:
