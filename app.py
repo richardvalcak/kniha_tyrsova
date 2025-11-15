@@ -96,7 +96,7 @@ with st.form("checkin", clear_on_submit=False):
             n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], key="n2", placeholder="20. 8. 1990")
         with c2b:
             a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], key="a2", placeholder="Hlavní 123, Brno")
-            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2", placeholder="např. 987654321 (OP), XY987654 (pas)")
+            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2", placeholder="např. 987654321 (OP)")
         o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
@@ -138,18 +138,23 @@ with st.form("checkin", clear_on_submit=False):
             errors.append("Zadejte platný email (např. **jan@seznam.cz**)")
 
         # 4. Narození
-        def valid_narozeni(n):
-            return bool(re.match(r"^\d{1,2}\. \d{1,2}\. \d{4}$", n.strip()))
-        if not valid_narozeni(n1):
-            errors.append("Narození 1. osoby: **15. 6. 1985**")
-        if pocet_osob == 2 and not valid_narozeni(n2):
-            errors.append("Narození 2. osoby: **20. 8. 1990**")
+def valid_narozeni(n):
+    n = n.strip()
+    # odstraníme případné dvojité mezery
+    n = re.sub(r"\s+", " ", n)
+    # povolíme formáty: 1.1.1990, 1. 1. 1990, 01.01.1990, 01. 01. 1990
+    try:
+        datetime.strptime(n.replace(" ", ""), "%d.%m.%Y")
+        return True
+    except ValueError:
+        return False
 
-        # 5. Doklad – jen vyplněný (žádný formát)
-        if not d1.strip():
-            errors.append("Zadejte číslo dokladu 1. osoby.")
-        if pocet_osob == 2 and not d2.strip():
-            errors.append("Zadejte číslo dokladu 2. osoby.")
+if not valid_narozeni(n1):
+    errors.append("Narození 1. osoby musí být ve formátu např. **15. 6. 1985**")
+
+if pocet_osob == 2 and not valid_narozeni(n2):
+    errors.append("Narození 2. osoby musí být ve formátu např. **20. 8. 1990**")
+        
 
         # 6. Povinná pole
         required = [j1, n1, a1, email]
@@ -184,5 +189,6 @@ with st.form("checkin", clear_on_submit=False):
                     st.error(f"Chyba ukládání: {e}")
             else:
                 st.error("Chyba připojení k Google Sheets.")
+
 
 
