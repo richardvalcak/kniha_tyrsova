@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.6 | © 2025
+# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.7 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -49,7 +49,6 @@ Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti ve
 Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.  
 **Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo**
 """)
-
 st.markdown("---")
 
 # === PAMĚŤ FORMULÁŘE ===
@@ -62,16 +61,19 @@ if 'form_data' not in st.session_state:
         'souhlas': False
     }
 
-# === FORMULÁŘ S VALIDACÍ ===
-with st.form("checkin", clear_on_submit=False):
-    pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0 if st.session_state.form_data['pocet_osob']==1 else 1)
+# === VÝBĚR POČTU OSOB MIMO FORMULÁŘ ===
+pocet_osob = st.selectbox("Počet osob *", [1, 2], index=0 if st.session_state.form_data['pocet_osob']==1 else 1)
 
+# === FORMULÁŘ ===
+with st.form("checkin", clear_on_submit=False):
+    # --- Datum příjezdu a odjezdu ---
     col1, col2 = st.columns(2)
     with col1:
         prichod = st.date_input("Příjezd *", st.session_state.form_data['prichod'])
     with col2:
         odjezd = st.date_input("Odjezd *", st.session_state.form_data['odjezd'])
 
+    # --- Kontakt ---
     col_t, col_e = st.columns(2)
     with col_t:
         telefon = st.text_input("Telefon *", value=st.session_state.form_data['telefon'], placeholder="+420 777 123 456")
@@ -79,27 +81,24 @@ with st.form("checkin", clear_on_submit=False):
         email = st.text_input("Email *", value=st.session_state.form_data['email'], placeholder="jan@seznam.cz")
 
     st.markdown("---")
-    st.subheader("1. Osoba")
-    c1a, c1b = st.columns(2)
-    with c1a:
-        j1 = st.text_input("Jméno a příjmení *", value=st.session_state.form_data['j1'], key="j1", placeholder="Jan Novák")
-        n1 = st.text_input("Narození *", value=st.session_state.form_data['n1'], key="n1", placeholder="15. 6. 1985")
-    with c1b:
-        a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], key="a1", placeholder="Hlavní 123, Brno")
-        d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], key="d1", placeholder="např. 123456789 (OP)")
 
-    o2_data = {}
+    # --- 1. Osoba ---
+    st.subheader("1. Osoba")
+    j1 = st.text_input("Jméno a příjmení *", value=st.session_state.form_data['j1'], key="j1")
+    n1 = st.text_input("Narození *", value=st.session_state.form_data['n1'], key="n1")
+    a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], key="a1")
+    d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], key="d1")
+
+    # --- 2. Osoba (jen pokud vybráno 2) ---
     if pocet_osob == 2:
         st.markdown("---")
         st.subheader("2. Osoba")
-        c2a, c2b = st.columns(2)
-        with c2a:
-            j2 = st.text_input("Jméno *", value=st.session_state.form_data['j2'], key="j2_input", placeholder="Marie Nováková")
-            n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], key="n2_input", placeholder="20. 8. 1990")
-        with c2b:
-            a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], key="a2_input", placeholder="Hlavní 123, Brno")
-            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2_input", placeholder="např. 987654321 (OP)")
-        o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
+        j2 = st.text_input("Jméno *", value=st.session_state.form_data['j2'], key="j2")
+        n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], key="n2")
+        a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], key="a2")
+        d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="d2")
+    else:
+        j2 = n2 = a2 = d2 = ""
 
     st.markdown("---")
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů**", value=st.session_state.form_data['souhlas'])
@@ -107,7 +106,7 @@ with st.form("checkin", clear_on_submit=False):
     submitted = st.form_submit_button("ODESLAT ZÁZNAM")
 
     if submitted:
-        # uložit do session
+        # Uložení do session
         st.session_state.form_data.update({
             'pocet_osob': pocet_osob, 'prichod': prichod, 'odjezd': odjezd,
             'telefon': telefon, 'email': email,
@@ -119,6 +118,7 @@ with st.form("checkin", clear_on_submit=False):
 
         errors = []
 
+        # --- Validace ---
         if prichod >= odjezd:
             errors.append("Odjezd musí být po příjezdu.")
         if not telefon.strip():
@@ -153,6 +153,8 @@ with st.form("checkin", clear_on_submit=False):
                 st.error(e)
             st.stop()
 
+        # --- ULOŽENÍ DO GOOGLE SHEETS ---
+        o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2} if pocet_osob==2 else {}
         row = [
             prichod.strftime("%d. %m. %Y"), odjezd.strftime("%d. %m. %Y"), pocet_osob,
             j1.strip(), n1.strip(), a1.strip(), d1.strip(),
