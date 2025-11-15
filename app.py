@@ -27,7 +27,7 @@ except:
 # === ÚVODNÍ TEXT ===
 st.markdown("""
 <div style='text-align:center; margin-bottom:30px; padding:20px; background:#f8f9fa; border-radius:12px;'>
-<h2 style='margin:0; color:#1a1a1a;'>Prosíme vás o vyplnění této knihy hostů.</h2>
+<h2 style='margin:0; color:#1a1a1a;'>Kniha hostů</h2>
 <p style='margin:10px 0 0; color:#555; font-size:16px;'>
 Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.<br>
 Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.
@@ -127,3 +127,4 @@ with st.form("checkin", clear_on_submit=True):
                     st.error("Chyba ukládání – kontaktuj správce.")
             else:
                 st.error("Chyba ukládání – kontaktuj správce.")
+
