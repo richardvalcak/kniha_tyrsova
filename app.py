@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.5 | © 2025
+# app.py – Kniha hostů | VOLNÝ DOKLAD | VERZE 7.4 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -88,33 +88,27 @@ with st.form("checkin", clear_on_submit=False):
         a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
         d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="např. 123456789 (OP)")
 
-    # === 2. Osoba – OPRAVENO ===
     o2_data = {}
+
+    # === ZOBRAZENÍ DRUHÉ OSOBY ===
     if pocet_osob == 2:
         st.markdown("---")
         st.subheader("2. Osoba")
-
         c2a, c2b = st.columns(2)
         with c2a:
-            j2 = st.text_input("Jméno *", value=st.session_state.form_data['j2'], placeholder="Marie Nováková")
-            n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], placeholder="20. 8. 1990")
+            j2 = st.text_input("Jméno *", value=st.session_state.form_data['j2'], key="_j2", placeholder="Marie Nováková")
+            n2 = st.text_input("Narození *", value=st.session_state.form_data['n2'], key="_n2", placeholder="20. 8. 1990")
         with c2b:
-            a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], placeholder="Hlavní 123, Brno")
-            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], placeholder="např. 987654321 (OP)")
-
+            a2 = st.text_input("Adresa *", value=st.session_state.form_data['a2'], key="_a2", placeholder="Hlavní 123, Brno")
+            d2 = st.text_input("Doklad *", value=st.session_state.form_data['d2'], key="_d2", placeholder="např. 987654321 (OP)")
         o2_data = {"jmeno": j2, "narozeni": n2, "adresa": a2, "doklad": d2}
 
     st.markdown("---")
-    st.markdown("""
-    **Souhlasím se zpracováním osobních údajů dle GDPR.**
-    """, unsafe_allow_html=True)
     souhlas = st.checkbox("**Souhlasím se zpracováním osobních údajů**", value=st.session_state.form_data['souhlas'])
 
-    submitted = st.form_submit_button("ODESLAT ZÁZNAM", use_container_width=True)
+    submitted = st.form_submit_button("ODESLAT ZÁZNAM")
 
-    # === VALIDACE ===
     if submitted:
-
         st.session_state.form_data.update({
             'pocet_osob': pocet_osob, 'prichod': prichod, 'odjezd': odjezd,
             'telefon': telefon, 'email': email,
@@ -126,17 +120,37 @@ with st.form("checkin", clear_on_submit=False):
 
         errors = []
 
-        # Datum narození – volnější regex
+        if prichod >= odjezd:
+            errors.append("Odjezd musí být po příjezdu.")
+
+        if not telefon.strip():
+            errors.append("Zadejte telefon.")
+
+        if not re.match(r"^[^@]+@[^@]+\\.[^@]+$", email.strip()):
+            errors.append("Zadejte platný email.")
+
         def valid_narozeni(n):
-            return bool(re.match(r"^\s*\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\s*$", n))
+            return bool(re.match(r"^\\s*\\d{1,2}\\.\\s*\\d{1,2}\\.\\s*\\d{4}\\s*$", n))
 
         if not valid_narozeni(n1):
-            errors.append("Narození 1. osoby musí být ve formátu **1. 1. 1985**")
+            errors.append("Narození 1. osoby je ve špatném formátu.")
 
         if pocet_osob == 2 and not valid_narozeni(n2):
-            errors.append("Narození 2. osoby musí být ve formátu **1. 1. 1985**")
+            errors.append("Narození 2. osoby je ve špatném formátu.")
 
-        # Další validace...
+        if not d1.strip():
+            errors.append("Zadejte doklad 1. osoby.")
+
+        if pocet_osob == 2 and not d2.strip():
+            errors.append("Zadejte doklad 2. osoby.")
+
+        required = [j1, n1, a1, email]
+        if pocet_osob == 2:
+            required += [j2, n2, a2]
+
+        if not all(field.strip() for field in required):
+            errors.append("Vyplňte všechny povinné údaje.")
+
         if not souhlas:
             errors.append("Souhlas je povinný.")
 
@@ -145,12 +159,10 @@ with st.form("checkin", clear_on_submit=False):
                 st.error(e)
             st.stop()
 
-        # Uložení do Google Sheets
         row = [
             prichod.strftime("%d. %m. %Y"), odjezd.strftime("%d. %m. %Y"), pocet_osob,
             j1.strip(), n1.strip(), a1.strip(), d1.strip(),
-            o2_data.get("jmeno", ""), o2_data.get("narozeni", ""),
-            o2_data.get("adresa", ""), o2_data.get("doklad", ""),
+            o2_data.get("jmeno", ""), o2_data.get("narozeni", ""), o2_data.get("adresa", ""), o2_data.get("doklad", ""),
             telefon.strip(), email.strip(), datetime.now().strftime("%d. %m. %Y %H:%M")
         ]
 
