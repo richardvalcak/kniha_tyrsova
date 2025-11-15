@@ -1,4 +1,4 @@
-# app.py – Kniha hostů | PODĚKOVÁNÍ PO ODESLÁNÍ | VERZE 6.0 | © 2025
+# app.py – Kniha hostů | FINÁLNÍ VERZE 6.1 | © 2025
 import streamlit as st
 from datetime import datetime
 import json
@@ -12,7 +12,7 @@ st.set_page_config(
     menu_items=None
 )
 
-# === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS ===
+# === TICHÉ PŘIPOJENÍ K GOOGLE SHEETS + HLAVIČKA ===
 sheet = None
 try:
     if "GSPREAD_CREDENTIALS" in st.secrets:
@@ -21,6 +21,22 @@ try:
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         sheet = client.open_by_key(st.secrets["SHEET_ID"]).worksheet(st.secrets["SHEET_NAME"])
+        
+        # === PŘIDEJ HLAVIČKU (jen pokud je prázdná) ===
+        if not sheet.row_values(1):  # Pokud 1. řádek je prázdný
+            header = [
+                "Příjezd", "Odjezd", "Počet osob",
+                "Jméno 1", "Narození 1", "Adresa 1", "Doklad 1",
+                "Jméno 2", "Narození 2", "Adresa 2", "Doklad 2",
+                "Telefon", "Email", "Odesláno"
+            ]
+            sheet.append_row(header)
+            # Formátování hlavičky (tučné, světle zelené pozadí)
+            sheet.format("1:1", {
+                "backgroundColor": {"red": 0.9, "green": 0.95, "blue": 0.9},
+                "textFormat": {"bold": True},
+                "horizontalAlignment": "CENTER"
+            })
 except:
     pass
 
@@ -33,7 +49,7 @@ if 'odeslano' in st.session_state and st.session_state.odeslano:
     Vaše údaje byly úspěšně uloženy.
     </p>
     <p style='font-size:16px; color:#555;'>
-    Přejeme vám příjemný pobyt v Apartmánu Tyršova! 🌿
+    Přejeme vám příjemný pobyt v Apartmánu Tyršova!
     </p>
     </div>
     """, unsafe_allow_html=True)
@@ -44,7 +60,7 @@ st.markdown("<h1 style='text-align:center; color:#1a1a1a; margin-bottom:20px;'>K
 
 # === ÚVODNÍ TEXT ===
 st.markdown("""
-Vyplněním formuláře nám pomáháte splnit zákonem stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.  
+Vyplněním formuláře nám pomáháte splnit zákomever stanovené povinnosti vedení evidence ubytovaných osob a platby místního poplatku z pobytu.  
 Vaše údaje jsou uchovávány v souladu s platnými právními předpisy a slouží výhradně k evidenci pobytu.  
 **Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo**
 """)
