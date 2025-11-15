@@ -84,7 +84,7 @@ with st.form("checkin", clear_on_submit=False):
         n1 = st.text_input("Narození * (15. 6. 1985)", value=st.session_state.form_data['n1'], placeholder="15. 6. 1985")
     with c1b:
         a1 = st.text_input("Adresa *", value=st.session_state.form_data['a1'], placeholder="Hlavní 123, Brno")
-        d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="např. 123456789 (OP), AB123456 (pas)")
+        d1 = st.text_input("Doklad *", value=st.session_state.form_data['d1'], placeholder="např. 123456789 (OP)")
 
     o2_data = {}
     if pocet_osob == 2:
@@ -184,3 +184,4 @@ with st.form("checkin", clear_on_submit=False):
                     st.error(f"Chyba ukládání: {e}")
             else:
                 st.error("Chyba připojení k Google Sheets.")
+
