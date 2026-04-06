@@ -25,21 +25,21 @@ TRANSLATIONS = {
 <p><b>Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo</b></p>
 </div>
 """,
-        "pocet_osob": "Počet osob",
-        "prichod": "Příjezd",
-        "odjezd": "Odjezd",
-        "telefon": "Telefon",
-        "email": "Email",
+        "pocet_osob": "Počet osob *",
+        "prichod": "Příjezd *",
+        "odjezd": "Odjezd *",
+        "telefon": "Telefon *",
+        "email": "Email *",
         "osoba_1": "### 1. Osoba",
         "osoba_2": "### 2. Osoba",
-        "jmeno": "Jméno a příjmení",
-        "jmeno_2": "Jméno a příjmení 2. osoby",
-        "narozeni": "Datum narození",
-        "narozeni_2": "Datum narození 2. osoby",
-        "adresa": "Adresa",
-        "adresa_2": "Adresa 2. osoby",
-        "doklad": "Doklad",
-        "doklad_2": "Doklad 2. osoby",
+        "jmeno": "Jméno a příjmení *",
+        "jmeno_2": "Jméno a příjmení 2. osoby *",
+        "narozeni": "Datum narození *",
+        "narozeni_2": "Datum narození 2. osoby *",
+        "adresa": "Adresa *",
+        "adresa_2": "Adresa 2. osoby *",
+        "doklad": "Doklad *",
+        "doklad_2": "Doklad 2. osoby *",
         "ph_jmeno": "Jan Novák",
         "ph_jmeno_2": "Marie Nováková",
         "ph_narozeni": "15. 6. 1985",
@@ -70,6 +70,7 @@ Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu h
         "err_sheets": "Chyba připojení k Google Sheets.",
         "err_ukladani": "Chyba ukládání: ",
         "lang_button": "🇬🇧 English",
+        "povinne": "* povinné pole",
     },
     "en": {
         "page_title": "Guest Book",
@@ -82,21 +83,21 @@ Tyto údaje budou uchovávány po dobu zákonem stanovenou pro evidenci pobytu h
 <p><b>Apartmán Tyršova, Tyršova 1239/1, 669 02 Znojmo</b></p>
 </div>
 """,
-        "pocet_osob": "Number of guests",
-        "prichod": "Check-in",
-        "odjezd": "Check-out",
-        "telefon": "Phone",
-        "email": "Email",
+        "pocet_osob": "Number of guests *",
+        "prichod": "Check-in *",
+        "odjezd": "Check-out *",
+        "telefon": "Phone *",
+        "email": "Email *",
         "osoba_1": "### Guest 1",
         "osoba_2": "### Guest 2",
-        "jmeno": "Full name",
-        "jmeno_2": "Full name (Guest 2)",
-        "narozeni": "Date of birth",
-        "narozeni_2": "Date of birth (Guest 2)",
-        "adresa": "Address",
-        "adresa_2": "Address (Guest 2)",
-        "doklad": "ID / Passport",
-        "doklad_2": "ID / Passport (Guest 2)",
+        "jmeno": "Full name *",
+        "jmeno_2": "Full name (Guest 2) *",
+        "narozeni": "Date of birth *",
+        "narozeni_2": "Date of birth (Guest 2) *",
+        "adresa": "Address *",
+        "adresa_2": "Address (Guest 2) *",
+        "doklad": "ID / Passport *",
+        "doklad_2": "ID / Passport (Guest 2) *",
         "ph_jmeno": "John Smith",
         "ph_jmeno_2": "Jane Smith",
         "ph_narozeni": "15. 6. 1985",
@@ -127,6 +128,7 @@ The data will be retained for the period required by law for guest registration 
         "err_sheets": "Error connecting to Google Sheets.",
         "err_ukladani": "Save error: ",
         "lang_button": "🇨🇿 Česky",
+        "povinne": "* required field",
     }
 }
 
@@ -169,6 +171,7 @@ st.markdown(f"<h1 style='text-align:center; color:#1a1a1a;'>{T['app_title']}</h1
 st.markdown(T["intro"], unsafe_allow_html=True)
 
 st.markdown("---")
+st.markdown(f"<p style='color:#888; font-size:13px;'>{T['povinne']}</p>", unsafe_allow_html=True)
 
 # --- Paměť formuláře ---
 if 'form_data' not in st.session_state:
